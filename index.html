@@ -30,114 +30,101 @@
         }
         .chart-container {
             position: relative;
-            height: 200px;
-            width: 200px;
+            height: 180px;
+            width: 180px;
             margin: 0 auto;
         }
         .nav-item.active {
             color: #0088cc;
         }
+        .nav-item {
+            transition: color 0.2s;
+        }
+        .btn-scale {
+            transition: transform 0.1s;
+        }
+        .btn-scale:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen flex flex-col">
-    <!-- Header -->
-    <header class="p-4 pt-8">
-        <div class="text-center">
-            <p class="text-slate-400 text-sm mb-1">Total Balance</p>
-            <h1 class="text-4xl font-bold text-white">$0.00</h1>
-        </div>
-    </header>
 
-    <!-- Chart Section -->
-    <section class="px-4 py-2">
-        <div class="bg-card rounded-2xl p-4 shadow-lg">
-            <h2 class="text-center text-slate-300 text-sm mb-4">Income vs Expenses</h2>
-            <div class="chart-container">
-                <canvas id="financeChart"></canvas>
+    <!-- ==================== HOME PAGE ==================== -->
+    <div id="home-page" class="flex-1 flex flex-col">
+        <!-- Header: Balance -->
+        <header class="p-5 pt-8">
+            <div class="text-center">
+                <p class="text-slate-400 text-sm mb-2">Total Balance</p>
+                <h1 id="balance-display" class="text-5xl font-bold text-white">$0.00</h1>
             </div>
-            <div class="flex justify-center gap-6 mt-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <span class="text-slate-400 text-sm">Income</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-rose-500"></div>
-                    <span class="text-slate-400 text-sm">Expenses</span>
-                </div>
-            </div>
-        </div>
-    </section>
+        </header>
 
-    <!-- Quick Stats -->
-    <section class="px-4 py-2 grid grid-cols-2 gap-3">
-        <div class="bg-card rounded-xl p-4 shadow-lg">
-            <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
+        <!-- Chart Section -->
+        <section class="px-5 py-3">
+            <div class="bg-card rounded-2xl p-5 shadow-xl">
+                <h2 class="text-center text-slate-300 text-sm mb-4">Income vs Expenses</h2>
+                <div class="chart-container">
+                    <canvas id="financeChart"></canvas>
                 </div>
-                <span class="text-slate-400 text-xs">Income</span>
+                <div class="flex justify-center gap-6 mt-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span class="text-slate-400 text-sm">Income</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                        <span class="text-slate-400 text-sm">Expenses</span>
+                    </div>
+                </div>
             </div>
-            <p class="text-emerald-400 font-semibold text-lg">$0.00</p>
-        </div>
-        <div class="bg-card rounded-xl p-4 shadow-lg">
-            <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
-                    </svg>
-                </div>
-                <span class="text-slate-400 text-xs">Expenses</span>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="px-5 py-6 flex-1 flex items-center justify-center">
+            <div class="flex gap-4 w-full max-w-sm">
+                <button
+                    onclick="addTransaction('income')"
+                    class="btn-scale flex-1 bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 rounded-2xl p-5 shadow-lg shadow-emerald-600/30"
+                >
+                    <div class="flex flex-col items-center gap-2">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span class="font-bold text-white text-lg">Income</span>
+                    </div>
+                </button>
+                <button
+                    onclick="addTransaction('expense')"
+                    class="btn-scale flex-1 bg-gradient-to-br from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 rounded-2xl p-5 shadow-lg shadow-rose-600/30"
+                >
+                    <div class="flex flex-col items-center gap-2">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/>
+                        </svg>
+                        <span class="font-bold text-white text-lg">Expense</span>
+                    </div>
+                </button>
             </div>
-            <p class="text-rose-400 font-semibold text-lg">$0.00</p>
-        </div>
-    </section>
+        </section>
+    </div>
 
-    <!-- Action Buttons -->
-    <section class="px-4 py-4 flex-1 flex items-center justify-center">
-        <div class="flex gap-4 w-full max-w-sm">
-            <button 
-                onclick="addIncome()"
-                class="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all duration-200 rounded-2xl p-4 shadow-lg shadow-emerald-600/30"
-            >
-                <div class="flex flex-col items-center gap-2">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    <span class="font-semibold text-white">Income</span>
-                </div>
-            </button>
-            <button 
-                onclick="addExpense()"
-                class="flex-1 bg-rose-600 hover:bg-rose-700 active:scale-95 transition-all duration-200 rounded-2xl p-4 shadow-lg shadow-rose-600/30"
-            >
-                <div class="flex flex-col items-center gap-2">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
-                    </svg>
-                    <span class="font-semibold text-white">Expense</span>
-                </div>
-            </button>
-        </div>
-    </section>
-
-    <!-- Footer Navigation -->
-    <nav class="bg-card border-t border-slate-700 px-6 py-3 pb-6">
+    <!-- ==================== FOOTER NAVIGATION ==================== -->
+    <nav class="bg-card border-t border-slate-700 px-6 py-3 pb-5">
         <div class="flex justify-around items-center">
-            <button class="nav-item active flex flex-col items-center gap-1 p-2" onclick="navigate('home')">
+            <button onclick="navigate('home')" id="nav-home" class="nav-item active flex flex-col items-center gap-1 p-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
                 <span class="text-xs">Home</span>
             </button>
-            <button class="nav-item text-slate-500 flex flex-col items-center gap-1 p-2" onclick="navigate('history')">
+            <button onclick="navigate('history')" id="nav-history" class="nav-item text-slate-500 flex flex-col items-center gap-1 p-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span class="text-xs">History</span>
             </button>
-            <button class="nav-item text-slate-500 flex flex-col items-center gap-1 p-2" onclick="navigate('settings')">
+            <button onclick="navigate('settings')" id="nav-settings" class="nav-item text-slate-500 flex flex-col items-center gap-1 p-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -147,102 +134,258 @@
         </div>
     </nav>
 
+    <!-- ==================== TRANSACTION MODAL ==================== -->
+    <div id="transaction-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-end">
+        <div class="bg-card w-full rounded-t-3xl p-6 pb-8">
+            <div class="w-12 h-1.5 bg-slate-600 rounded-full mx-auto mb-6"></div>
+
+            <h2 id="modal-title" class="text-2xl font-bold mb-6 text-center">Add Transaction</h2>
+
+            <!-- Amount Input -->
+            <div class="mb-5">
+                <label class="block text-slate-400 text-sm mb-2 text-center">Amount ($)</label>
+                <input type="number" id="amount-input" step="0.01" min="0"
+                    class="w-full bg-cardHover rounded-xl px-4 py-4 text-3xl font-bold text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="0.00">
+            </div>
+
+            <!-- Category Selection -->
+            <div class="mb-5">
+                <label class="block text-slate-400 text-sm mb-3 text-center">Category</label>
+                <div id="income-categories" class="hidden grid grid-cols-3 gap-2">
+                    <button onclick="selectCategory('Salary')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">💰 Salary</button>
+                    <button onclick="selectCategory('Freelance')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">💻 Freelance</button>
+                    <button onclick="selectCategory('Investment')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">📈 Investment</button>
+                    <button onclick="selectCategory('Gift')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">🎁 Gift</button>
+                    <button onclick="selectCategory('Other')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">📦 Other</button>
+                </div>
+                <div id="expense-categories" class="hidden grid grid-cols-3 gap-2">
+                    <button onclick="selectCategory('Food')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">🍔 Food</button>
+                    <button onclick="selectCategory('Transport')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">🚗 Transport</button>
+                    <button onclick="selectCategory('Shopping')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">🛍️ Shopping</button>
+                    <button onclick="selectCategory('Bills')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">📄 Bills</button>
+                    <button onclick="selectCategory('Entertainment')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">🎬 Entertainment</button>
+                    <button onclick="selectCategory('Health')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">🏥 Health</button>
+                    <button onclick="selectCategory('Other')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-3 py-3 text-sm">📦 Other</button>
+                </div>
+            </div>
+
+            <!-- Description Input -->
+            <div class="mb-6">
+                <label class="block text-slate-400 text-sm mb-2 text-center">Description (optional)</label>
+                <input type="text" id="description-input"
+                    class="w-full bg-cardHover rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="What was this for?">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 btn-scale rounded-xl px-4 py-4 font-semibold">Cancel</button>
+                <button onclick="submitTransaction()" id="submit-btn" class="flex-1 bg-emerald-600 hover:bg-emerald-700 btn-scale rounded-xl px-4 py-4 font-semibold">Add</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Инициализация Telegram WebApp
+        // ==================== INIT ====================
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Применяем тему Telegram
-        document.documentElement.style.setProperty('--tg-theme-bg-color', tg.backgroundColor || '#0f172a');
+        // Данные пользователя из Telegram
+        const user = tg.initDataUnsafe?.user || {};
+        const currentUser = {
+            id: user.id || 1,
+            username: user.username || 'test_user',
+            first_name: user.first_name || 'Test'
+        };
 
-        // Chart.js - Pie Chart
-        const ctx = document.getElementById('financeChart').getContext('2d');
-        const financeChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Income', 'Expenses'],
-                datasets: [{
-                    data: [70, 30],
-                    backgroundColor: ['#10b981', '#ef4444'],
-                    borderWidth: 0,
-                    hoverOffset: 10
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        enabled: true,
-                        backgroundColor: '#1e293b',
-                        titleColor: '#94a3b8',
-                        bodyColor: '#fff',
-                        padding: 12,
-                        cornerRadius: 8,
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': $' + context.raw;
+        let currentType = 'income';
+        let selectedCategory = '';
+        let balance = 0;
+        let incomeTotal = 0;
+        let expenseTotal = 0;
+        let financeChart = null;
+
+        // ==================== CHART ====================
+        function initChart() {
+            const ctx = document.getElementById('financeChart').getContext('2d');
+            financeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Income', 'Expenses'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.parsed.toFixed(2);
+                                }
                             }
                         }
-                    }
+                    },
+                    cutout: '65%'
                 }
+            });
+        }
+
+        function updateChart() {
+            if (financeChart) {
+                financeChart.data.datasets[0].data = [incomeTotal, expenseTotal];
+                financeChart.update();
             }
-        });
-
-        // Функции действий
-        function addIncome() {
-            tg.showPopup({
-                title: 'Add Income',
-                message: 'Enter income amount and description',
-                buttons: [
-                    {type: 'ok', text: 'OK'}
-                ]
-            });
-            // Здесь будет логика добавления дохода
-            console.log('Add Income clicked');
         }
 
-        function addExpense() {
-            tg.showPopup({
-                title: 'Add Expense',
-                message: 'Enter expense amount and description',
-                buttons: [
-                    {type: 'ok', text: 'OK'}
-                ]
-            });
-            // Здесь будет логика добавления расхода
-            console.log('Add Expense clicked');
+        // ==================== UI FUNCTIONS ====================
+        function updateBalanceDisplay() {
+            document.getElementById('balance-display').textContent = `$${balance.toFixed(2)}`;
         }
 
-        // Навигация
         function navigate(page) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active', 'text-white');
-                item.classList.add('text-slate-500');
+            // Сброс всех активных классов
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active', 'text-white');
+                el.classList.add('text-slate-500');
             });
-            event.currentTarget.classList.add('active', 'text-white');
-            event.currentTarget.classList.remove('text-slate-500');
-            
-            if (page !== 'home') {
-                tg.showPopup({
-                    title: 'Coming Soon',
-                    message: `${page.charAt(0).toUpperCase() + page.slice(1)} page is under development`,
-                    buttons: [{type: 'ok', text: 'OK'}]
-                });
+
+            // Установка активного класса
+            const activeNav = document.getElementById(`nav-${page}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-500');
+                activeNav.classList.add('active', 'text-white');
+            }
+
+            // Haptic feedback
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
             }
         }
 
-        // Haptic feedback при кликах
-        document.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                tg.HapticFeedback.impactOccurred('light');
+        function addTransaction(type) {
+            currentType = type;
+            selectedCategory = '';
+
+            const modal = document.getElementById('transaction-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const submitBtn = document.getElementById('submit-btn');
+            const incomeCats = document.getElementById('income-categories');
+            const expenseCats = document.getElementById('expense-categories');
+            const amountInput = document.getElementById('amount-input');
+
+            // Сброс значений
+            amountInput.value = '';
+            document.getElementById('description-input').value = '';
+
+            if (type === 'income') {
+                modalTitle.textContent = '+ Add Income';
+                submitBtn.textContent = 'Add Income';
+                submitBtn.className = 'flex-1 bg-emerald-600 hover:bg-emerald-700 btn-scale rounded-xl px-4 py-4 font-semibold';
+                incomeCats.classList.remove('hidden');
+                expenseCats.classList.add('hidden');
+            } else {
+                modalTitle.textContent = '- Add Expense';
+                submitBtn.textContent = 'Add Expense';
+                submitBtn.className = 'flex-1 bg-rose-600 hover:bg-rose-700 btn-scale rounded-xl px-4 py-4 font-semibold';
+                expenseCats.classList.remove('hidden');
+                incomeCats.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        }
+
+        function selectCategory(category) {
+            selectedCategory = category;
+
+            // Визуальное выделение
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-primary');
             });
-        });
+            event.target.classList.add('ring-2', 'ring-primary');
+
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.selectionChanged();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('transaction-modal').classList.add('hidden');
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        function submitTransaction() {
+            const amount = parseFloat(document.getElementById('amount-input').value);
+            const description = document.getElementById('description-input').value;
+
+            if (!amount || amount <= 0) {
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('error');
+                }
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            if (!selectedCategory) {
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('warning');
+                }
+                alert('Please select a category');
+                return;
+            }
+
+            // Обновление данных
+            if (currentType === 'income') {
+                incomeTotal += amount;
+                balance += amount;
+            } else {
+                expenseTotal += amount;
+                balance -= amount;
+            }
+
+            updateBalanceDisplay();
+            updateChart();
+            closeModal();
+
+            // Отправка данных боту (опционально)
+            tg.sendData(JSON.stringify({
+                type: currentType,
+                amount: amount,
+                category: selectedCategory,
+                description: description
+            }));
+        }
+
+        // ==================== INIT ON LOAD ====================
+        window.onload = function() {
+            initChart();
+            updateBalanceDisplay();
+            updateChart();
+
+            // Установка цвета хедера Telegram
+            if (tg.setHeaderColor) {
+                tg.setHeaderColor('#1e293b');
+            }
+        };
     </script>
 </body>
 </html>
