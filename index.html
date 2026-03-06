@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finance Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0088cc',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        card: '#1e293b',
+                        cardHover: '#334155',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 200px;
+            margin: 0 auto;
+        }
+        .nav-item.active {
+            color: #0088cc;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="p-4 pt-8">
+        <div class="text-center">
+            <p class="text-slate-400 text-sm mb-1">Total Balance</p>
+            <h1 class="text-4xl font-bold text-white">$0.00</h1>
+        </div>
+    </header>
+
+    <!-- Chart Section -->
+    <section class="px-4 py-2">
+        <div class="bg-card rounded-2xl p-4 shadow-lg">
+            <h2 class="text-center text-slate-300 text-sm mb-4">Income vs Expenses</h2>
+            <div class="chart-container">
+                <canvas id="financeChart"></canvas>
+            </div>
+            <div class="flex justify-center gap-6 mt-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span class="text-slate-400 text-sm">Income</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                    <span class="text-slate-400 text-sm">Expenses</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="px-4 py-2 grid grid-cols-2 gap-3">
+        <div class="bg-card rounded-xl p-4 shadow-lg">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </div>
+                <span class="text-slate-400 text-xs">Income</span>
+            </div>
+            <p class="text-emerald-400 font-semibold text-lg">$0.00</p>
+        </div>
+        <div class="bg-card rounded-xl p-4 shadow-lg">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                    </svg>
+                </div>
+                <span class="text-slate-400 text-xs">Expenses</span>
+            </div>
+            <p class="text-rose-400 font-semibold text-lg">$0.00</p>
+        </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <section class="px-4 py-4 flex-1 flex items-center justify-center">
+        <div class="flex gap-4 w-full max-w-sm">
+            <button 
+                onclick="addIncome()"
+                class="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all duration-200 rounded-2xl p-4 shadow-lg shadow-emerald-600/30"
+            >
+                <div class="flex flex-col items-center gap-2">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span class="font-semibold text-white">Income</span>
+                </div>
+            </button>
+            <button 
+                onclick="addExpense()"
+                class="flex-1 bg-rose-600 hover:bg-rose-700 active:scale-95 transition-all duration-200 rounded-2xl p-4 shadow-lg shadow-rose-600/30"
+            >
+                <div class="flex flex-col items-center gap-2">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                    </svg>
+                    <span class="font-semibold text-white">Expense</span>
+                </div>
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer Navigation -->
+    <nav class="bg-card border-t border-slate-700 px-6 py-3 pb-6">
+        <div class="flex justify-around items-center">
+            <button class="nav-item active flex flex-col items-center gap-1 p-2" onclick="navigate('home')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span class="text-xs">Home</span>
+            </button>
+            <button class="nav-item text-slate-500 flex flex-col items-center gap-1 p-2" onclick="navigate('history')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-xs">History</span>
+            </button>
+            <button class="nav-item text-slate-500 flex flex-col items-center gap-1 p-2" onclick="navigate('settings')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span class="text-xs">Settings</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Применяем тему Telegram
+        document.documentElement.style.setProperty('--tg-theme-bg-color', tg.backgroundColor || '#0f172a');
+
+        // Chart.js - Pie Chart
+        const ctx = document.getElementById('financeChart').getContext('2d');
+        const financeChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Income', 'Expenses'],
+                datasets: [{
+                    data: [70, 30],
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#1e293b',
+                        titleColor: '#94a3b8',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': $' + context.raw;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Функции действий
+        function addIncome() {
+            tg.showPopup({
+                title: 'Add Income',
+                message: 'Enter income amount and description',
+                buttons: [
+                    {type: 'ok', text: 'OK'}
+                ]
+            });
+            // Здесь будет логика добавления дохода
+            console.log('Add Income clicked');
+        }
+
+        function addExpense() {
+            tg.showPopup({
+                title: 'Add Expense',
+                message: 'Enter expense amount and description',
+                buttons: [
+                    {type: 'ok', text: 'OK'}
+                ]
+            });
+            // Здесь будет логика добавления расхода
+            console.log('Add Expense clicked');
+        }
+
+        // Навигация
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active', 'text-white');
+                item.classList.add('text-slate-500');
+            });
+            event.currentTarget.classList.add('active', 'text-white');
+            event.currentTarget.classList.remove('text-slate-500');
+            
+            if (page !== 'home') {
+                tg.showPopup({
+                    title: 'Coming Soon',
+                    message: `${page.charAt(0).toUpperCase() + page.slice(1)} page is under development`,
+                    buttons: [{type: 'ok', text: 'OK'}]
+                });
+            }
+        }
+
+        // Haptic feedback при кликах
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                tg.HapticFeedback.impactOccurred('light');
+            });
+        });
+    </script>
+</body>
+</html>
