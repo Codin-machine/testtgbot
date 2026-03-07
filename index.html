@@ -3,524 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance Tracker</title>
+    <title>Главная - Finance Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0088cc',
-                        success: '#10b981',
-                        danger: '#ef4444',
-                        card: '#1e293b',
-                        cardHover: '#334155',
-                    }
-                }
-            }
+            theme: { extend: { colors: { primary: '#0088cc', card: '#1e293b', cardHover: '#334155' } } }
         }
     </script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            padding-bottom: 80px; /* Отступ для нижнего меню */
-        }
-        .chart-container {
-            position: relative;
-            height: 180px;
-            width: 180px;
-            margin: 0 auto;
-        }
-        .nav-item {
-            transition: all 0.2s;
-            color: #64748b; /* slate-500 */
-        }
-        .nav-item.active {
-            color: #0088cc;
-        }
-        .btn-scale {
-            transition: transform 0.1s;
-        }
-        .btn-scale:active {
-            transform: scale(0.95);
-        }
-        .page {
-            display: none;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        .page.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        body { padding-bottom: 80px; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .chart-container { position: relative; height: 180px; width: 180px; margin: 0 auto; }
+        .btn-scale:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen flex flex-col">
 
-    <!-- ==================== ГЛАВНАЯ СТРАНИЦА ==================== -->
-    <div id="home-page" class="page active flex-1 flex flex-col">
-        <header class="p-5 pt-8">
-            <div class="text-center">
-                <p class="text-slate-400 text-sm mb-2">Общий баланс</p>
-                <h1 id="balance-display" class="text-5xl font-bold text-white">$0.00</h1>
-            </div>
-        </header>
+    <header class="p-5 pt-8">
+        <div class="text-center">
+            <p class="text-slate-400 text-sm mb-2">Общий баланс</p>
+            <h1 id="balance-display" class="text-5xl font-bold text-white">0.00</h1>
+        </div>
+    </header>
 
-        <section class="px-5 py-3">
-            <div class="bg-card rounded-2xl p-5 shadow-xl">
-                <h2 class="text-center text-slate-300 text-sm mb-4">Доходы и Расходы</h2>
-                <div class="chart-container">
-                    <canvas id="financeChart"></canvas>
-                </div>
-                <div class="flex justify-center gap-6 mt-4">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                        <span class="text-slate-400 text-sm">Доход</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
-                        <span class="text-slate-400 text-sm">Расход</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <section class="px-5 py-3">
+        <div class="bg-card rounded-2xl p-5 shadow-xl">
+            <div class="chart-container"><canvas id="financeChart"></canvas></div>
+        </div>
+    </section>
 
-        <section class="px-5 py-6 flex-1 flex items-center justify-center">
-            <div class="flex gap-4 w-full max-w-sm">
-                <button onclick="addTransaction('income')" class="btn-scale flex-1 bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 rounded-2xl p-5 shadow-lg shadow-emerald-600/30">
-                    <div class="flex flex-col items-center gap-2">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        <span class="font-bold text-white text-lg">Доход</span>
-                    </div>
-                </button>
-                <button onclick="addTransaction('expense')" class="btn-scale flex-1 bg-gradient-to-br from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 rounded-2xl p-5 shadow-lg shadow-rose-600/30">
-                    <div class="flex flex-col items-center gap-2">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/>
-                        </svg>
-                        <span class="font-bold text-white text-lg">Расход</span>
-                    </div>
-                </button>
-            </div>
-        </section>
-    </div>
+    <section class="px-5 py-6 flex-1 flex items-center justify-center">
+        <div class="flex gap-4 w-full max-w-sm">
+            <button onclick="addTransaction('income')" class="btn-scale flex-1 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-5 shadow-lg"><span class="font-bold text-lg">+ Доход</span></button>
+            <button onclick="addTransaction('expense')" class="btn-scale flex-1 bg-gradient-to-br from-rose-600 to-rose-700 rounded-2xl p-5 shadow-lg"><span class="font-bold text-lg">- Расход</span></button>
+        </div>
+    </section>
 
-    <!-- ==================== СТРАНИЦА ИСТОРИИ ==================== -->
-    <div id="history-page" class="page flex-1 flex flex-col">
-        <header class="p-5 pt-8 border-b border-slate-700">
-            <h1 class="text-2xl font-bold text-center">История</h1>
-        </header>
-        <section class="flex-1 overflow-y-auto p-5">
-            <div id="transactions-list" class="space-y-3">
-                <!-- Транзакции появятся здесь -->
-            </div>
-            <div id="no-transactions" class="text-center text-slate-500 mt-12 hidden">
-                <svg class="w-20 h-20 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                <p class="text-lg">Пока нет записей</p>
-                <p class="text-sm mt-1">Добавьте доходы или убытки</p>
-            </div>
-        </section>
-    </div>
-
-    <!-- ==================== СТРАНИЦА НАСТРОЕК ==================== -->
-    <div id="settings-page" class="page flex-1 flex flex-col">
-        <header class="p-5 pt-8 border-b border-slate-700">
-            <h1 class="text-2xl font-bold text-center">Настройки</h1>
-        </header>
-        <section class="flex-1 overflow-y-auto p-5 space-y-4">
-            
-            <div class="bg-card rounded-xl p-5">
-                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Валюта отображения
-                </h2>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-300">Выбрать валюту</span>
-                        <select id="base-currency" onchange="updateCurrency()" class="bg-cardHover rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-white">
-                            <option value="USD">🇺🇸 USD ($)</option>
-                            <option value="RUB">🇷🇺 RUB (₽)</option>
-                            <option value="EUR">🇪🇺 EUR (€)</option>
-                            <option value="CNY">🇨🇳 CNY (¥)</option>
-                            <option value="GBP">🇬🇧 GBP (£)</option>
-                        </select>
-                    </div>
-                    <button onclick="fetchRates()" class="w-full bg-primary hover:bg-primary/80 btn-scale rounded-xl px-4 py-3 flex items-center justify-center gap-2 font-medium">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                        </svg>
-                        Обновить курсы валют (API)
-                    </button>
-                    <div id="rates-status" class="text-sm text-center hidden"></div>
-                </div>
-            </div>
-
-            <div class="bg-card rounded-xl p-5">
-                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                    </svg>
-                    Текущие курсы (к 1 USD)
-                </h2>
-                <div id="rates-list" class="grid grid-cols-2 gap-3 text-sm">
-                    <div class="flex justify-between bg-cardHover rounded-lg px-3 py-2">
-                        <span class="text-slate-400">RUB</span><span id="rate-RUB" class="font-mono">...</span>
-                    </div>
-                    <div class="flex justify-between bg-cardHover rounded-lg px-3 py-2">
-                        <span class="text-slate-400">EUR</span><span id="rate-EUR" class="font-mono">...</span>
-                    </div>
-                    <div class="flex justify-between bg-cardHover rounded-lg px-3 py-2">
-                        <span class="text-slate-400">CNY</span><span id="rate-CNY" class="font-mono">...</span>
-                    </div>
-                    <div class="flex justify-between bg-cardHover rounded-lg px-3 py-2">
-                        <span class="text-slate-400">GBP</span><span id="rate-GBP" class="font-mono">...</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- ==================== НИЖНЕЕ НАВИГАЦИОННОЕ МЕНЮ ==================== -->
+    <!-- Нижнее меню -->
     <nav class="fixed bottom-0 w-full bg-card border-t border-slate-700 pb-safe z-40">
         <div class="flex justify-around items-center p-2">
-            <button onclick="navigate('home')" id="nav-home" class="nav-item active flex flex-col items-center gap-1 w-20 py-1">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <a href="index.html" class="flex flex-col items-center gap-1 w-20 py-1 text-primary">
                 <span class="text-xs font-medium">Главная</span>
-            </button>
-            <button onclick="navigate('history')" id="nav-history" class="nav-item flex flex-col items-center gap-1 w-20 py-1">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            </a>
+            <a href="history.html" class="flex flex-col items-center gap-1 w-20 py-1 text-slate-500 hover:text-white">
                 <span class="text-xs font-medium">История</span>
-            </button>
-            <button onclick="navigate('settings')" id="nav-settings" class="nav-item flex flex-col items-center gap-1 w-20 py-1">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </a>
+            <a href="settings.html" class="flex flex-col items-center gap-1 w-20 py-1 text-slate-500 hover:text-white">
                 <span class="text-xs font-medium">Настройки</span>
-            </button>
+            </a>
         </div>
     </nav>
 
-    <!-- ==================== МОДАЛЬНОЕ ОКНО ТРАНЗАКЦИЙ ==================== -->
+    <!-- Модалка (сокращенная для примера) -->
     <div id="transaction-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-end">
         <div class="bg-card w-full rounded-t-3xl p-6 pb-20">
-            <div class="w-12 h-1.5 bg-slate-600 rounded-full mx-auto mb-6"></div>
             <h2 id="modal-title" class="text-2xl font-bold mb-6 text-center">Добавить</h2>
-
-            <div class="mb-5">
-                <label id="amount-label" class="block text-slate-400 text-sm mb-2 text-center">Сумма ($)</label>
-                <input type="number" id="amount-input" step="0.01" min="0"
-                    class="w-full bg-cardHover rounded-xl px-4 py-4 text-3xl font-bold text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="0.00">
-            </div>
-
-            <div class="mb-5">
-                <label class="block text-slate-400 text-sm mb-3 text-center">Категория</label>
-                <div id="income-categories" class="hidden grid grid-cols-3 gap-2">
-                    <button onclick="selectCategory('Зарплата')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-2 py-3 text-sm">💰 Зарплата</button>
-                    <button onclick="selectCategory('Фриланс')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-2 py-3 text-sm">💻 Фриланс</button>
-                    <button onclick="selectCategory('Крипта')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-2 py-3 text-sm">📈 Крипта</button>
-                </div>
-                <div id="expense-categories" class="hidden grid grid-cols-3 gap-2">
-                    <button onclick="selectCategory('Еда')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-2 py-3 text-sm">🍔 Еда</button>
-                    <button onclick="selectCategory('Транспорт')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-2 py-3 text-sm">🚗 Транспорт</button>
-                    <button onclick="selectCategory('Покупки')" class="category-btn bg-cardHover hover:bg-cardHover/70 rounded-xl px-2 py-3 text-sm">🛍️ Покупки</button>
-                </div>
-            </div>
-
-            <div class="flex gap-3 mt-8">
-                <button onclick="closeModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 btn-scale rounded-xl px-4 py-4 font-semibold">Отмена</button>
-                <button onclick="submitTransaction()" id="submit-btn" class="flex-1 bg-emerald-600 hover:bg-emerald-700 btn-scale rounded-xl px-4 py-4 font-semibold">Добавить</button>
+            <input type="number" id="amount-input" class="w-full bg-cardHover rounded-xl px-4 py-4 text-3xl font-bold text-white text-center mb-4" placeholder="Сумма">
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 bg-slate-700 rounded-xl px-4 py-4">Отмена</button>
+                <button onclick="submitTransaction()" class="flex-1 bg-emerald-600 rounded-xl px-4 py-4">Добавить</button>
             </div>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
         tg.expand();
-        if (tg.setHeaderColor) tg.setHeaderColor('#1e293b');
 
-        // Глобальные переменные состояния
+        // Загрузка состояния из кэша
+        let state = JSON.parse(localStorage.getItem('financeState')) || { balanceUSD: 0, currency: 'USD', rates: { USD: 1, RUB: 92.5 }, transactions: [] };
         let currentType = 'income';
-        let selectedCategory = '';
-        
-        // ВСЕ ДАННЫЕ ВНУТРИ ХРАНЯТСЯ В ДОЛЛАРАХ (USD)
-        let balanceUSD = 0; 
-        let transactions = []; // Формат: { id, type, amountUSD, category, date }
+        const symbols = { USD: '$', RUB: '₽', EUR: '€', CNY: '¥', GBP: '£' };
 
-        // Логика Мультивалютности
-        let displayCurrency = 'USD';
-        const currencySymbols = { USD: '$', RUB: '₽', EUR: '€', CNY: '¥', GBP: '£' };
-        
-        // Дефолтные курсы (на случай если API недоступно)
-        let exchangeRates = { USD: 1, RUB: 92.5, EUR: 0.92, CNY: 7.23, GBP: 0.79 }; 
-        let financeChart = null;
-
-        // ==================== ЛОГИКА ВАЛЮТ ====================
-        function formatMoney(amountInUSD) {
-            const rate = exchangeRates[displayCurrency] || 1;
-            const converted = amountInUSD * rate;
-            const symbol = currencySymbols[displayCurrency];
-            // Знак валюты ставим спереди или сзади в зависимости от валюты
-            return displayCurrency === 'RUB' ? `${converted.toFixed(2)} ${symbol}` : `${symbol}${converted.toFixed(2)}`;
-        }
-
-        async function fetchRates() {
-            const statusEl = document.getElementById('rates-status');
-            statusEl.classList.remove('hidden');
-            statusEl.textContent = '⏳ Загрузка курсов...';
-            statusEl.className = 'text-sm text-center text-slate-300 mt-2';
-
-            try {
-                // Используем бесплатное публичное API для получения курсов к USD
-                const response = await fetch(`https://open.er-api.com/v6/latest/USD`);
-                const data = await response.json();
-
-                if (data.result === "success") {
-                    exchangeRates.RUB = data.rates.RUB;
-                    exchangeRates.EUR = data.rates.EUR;
-                    exchangeRates.CNY = data.rates.CNY;
-                    exchangeRates.GBP = data.rates.GBP;
-                    
-                    document.getElementById('rate-RUB').textContent = exchangeRates.RUB.toFixed(2);
-                    document.getElementById('rate-EUR').textContent = exchangeRates.EUR.toFixed(2);
-                    document.getElementById('rate-CNY').textContent = exchangeRates.CNY.toFixed(2);
-                    document.getElementById('rate-GBP').textContent = exchangeRates.GBP.toFixed(2);
-
-                    statusEl.textContent = `✅ Курсы обновлены!`;
-                    statusEl.className = 'text-sm text-center text-emerald-400 mt-2';
-                    updateUI(); // Перерисовываем интерфейс с новыми курсами
-                }
-            } catch (e) {
-                statusEl.textContent = '❌ Ошибка при загрузке API';
-                statusEl.className = 'text-sm text-center text-danger mt-2';
-            }
-            setTimeout(() => statusEl.classList.add('hidden'), 3000);
-        }
-
-        function updateCurrency() {
-            displayCurrency = document.getElementById('base-currency').value;
-            updateUI();
-            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-        }
-
-        // ==================== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ====================
         function updateUI() {
-            // 1. Обновляем главный баланс
-            document.getElementById('balance-display').textContent = formatMoney(balanceUSD);
-            
-            // 2. Обновляем лейбл в модалке
-            document.getElementById('amount-label').textContent = `Сумма (${currencySymbols[displayCurrency]})`;
-
-            // 3. Перерисовываем историю транзакций
-            renderTransactions();
-
-            // 4. Обновляем график (перерисовываем tooltips)
-            updateChartData();
+            const rate = state.rates[state.currency] || 1;
+            const converted = state.balanceUSD * rate;
+            document.getElementById('balance-display').textContent = `${converted.toFixed(2)} ${symbols[state.currency]}`;
+            localStorage.setItem('financeState', JSON.stringify(state));
         }
 
-        function renderTransactions() {
-            const listEl = document.getElementById('transactions-list');
-            const noTxEl = document.getElementById('no-transactions');
-
-            if (transactions.length === 0) {
-                listEl.innerHTML = '';
-                noTxEl.classList.remove('hidden');
-                return;
-            }
-
-            noTxEl.classList.add('hidden');
-            listEl.innerHTML = transactions.slice().reverse().map(tx => {
-                const isIncome = tx.type === 'income';
-                const icon = isIncome ? '📥' : '📤';
-                const sign = isIncome ? '+' : '-';
-                const colorClass = isIncome ? 'text-emerald-400' : 'text-rose-400';
-
-                return `
-                    <div class="bg-card rounded-xl p-4 flex items-center justify-between shadow-sm">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-xl">${icon}</div>
-                            <div>
-                                <p class="font-medium">${tx.category}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold ${colorClass}">${sign} ${formatMoney(tx.amountUSD)}</p>
-                            <p class="text-xs text-slate-500">${tx.date}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ==================== НАВИГАЦИЯ И МОДАЛКИ ====================
-        function navigate(page) {
-            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-            document.getElementById(`${page}-page`).classList.add('active');
-            document.getElementById(`nav-${page}`).classList.add('active');
-
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        }
-
-        function addTransaction(type) {
-            currentType = type;
-            selectedCategory = '';
-            document.getElementById('amount-input').value = '';
-            
-            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('ring-2', 'ring-primary'));
-
-            if (type === 'income') {
-                document.getElementById('modal-title').textContent = '+ Доход';
-                document.getElementById('submit-btn').className = 'flex-1 bg-emerald-600 hover:bg-emerald-700 btn-scale rounded-xl px-4 py-4 font-semibold';
-                document.getElementById('income-categories').classList.remove('hidden');
-                document.getElementById('expense-categories').classList.add('hidden');
-            } else {
-                document.getElementById('modal-title').textContent = '- Расход';
-                document.getElementById('submit-btn').className = 'flex-1 bg-rose-600 hover:bg-rose-700 btn-scale rounded-xl px-4 py-4 font-semibold';
-                document.getElementById('expense-categories').classList.remove('hidden');
-                document.getElementById('income-categories').classList.add('hidden');
-            }
-
-            document.getElementById('transaction-modal').classList.remove('hidden');
-        }
-
-        function selectCategory(category) {
-            selectedCategory = category;
-            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('ring-2', 'ring-primary'));
-            event.target.classList.add('ring-2', 'ring-primary');
-            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-        }
-
-        function closeModal() {
-            document.getElementById('transaction-modal').classList.add('hidden');
-        }
+        function addTransaction(type) { currentType = type; document.getElementById('transaction-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('transaction-modal').classList.add('hidden'); }
 
         function submitTransaction() {
-            const inputAmount = parseFloat(document.getElementById('amount-input').value);
-            if (!inputAmount || inputAmount <= 0) return alert('Введите корректную сумму');
-            if (!selectedCategory) return alert('Выберите категорию');
+            const amount = parseFloat(document.getElementById('amount-input').value);
+            if (!amount) return;
 
-            // Конвертируем введенную сумму в базовые доллары (USD) для сохранения
-            const rate = exchangeRates[displayCurrency] || 1;
-            const amountInUSD = inputAmount  / rate; // Переводим введенную сумму в базовые доллары (USD)
+            const rate = state.rates[state.currency] || 1;
+            const amountUSD = amount / rate;
 
-            // Обновляем общий баланс в USD
-            if (currentType === 'income') {
-                balanceUSD += amountInUSD;
-            } else {
-                balanceUSD -= amountInUSD;
-            }
-
-            // Создаем и добавляем запись в локальную историю
-            const newTx = {
-                id: Date.now(),
-                type: currentType,
-                amountUSD: amountInUSD,
-                category: selectedCategory,
-                date: new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' })
-            };
-            transactions.push(newTx);
-
-            // Вибрация при успешном добавлении
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-
-            // Отправляем данные обратно в Telegram бота (чтобы бот записал их в свою БД)
-            tg.sendData(JSON.stringify({
-                action: 'add_transaction',
-                type: currentType,
-                amount: inputAmount,
-                currency: displayCurrency,
-                amountUSD: amountInUSD,
-                category: selectedCategory
-            }));
-
-            closeModal();
-            updateUI();
-            updateChartData();
-        }
-
-        // ==================== ЛОГИКА ГРАФИКА ====================
-        function initChart() {
-            const ctx = document.getElementById('financeChart').getContext('2d');
-            financeChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Доходы', 'Расходы'],
-                    datasets: [{
-                        data: [0, 0],
-                        backgroundColor: ['#10b981', '#ef4444'],
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    // При наведении на график сумма форматируется под выбранную валюту
-                                    return ' ' + formatMoney(context.raw);
-                                }
-                            }
-                        }
-                    },
-                    cutout: '65%'
-                }
-            });
-        }
-
-        function updateChartData() {
-            let totalIncomeUSD = 0;
-            let totalExpenseUSD = 0;
-
-            transactions.forEach(tx => {
-                if (tx.type === 'income') {
-                    totalIncomeUSD += tx.amountUSD;
-                } else {
-                    totalExpenseUSD += tx.amountUSD;
-                }
-            });
-
-            if (financeChart) {
-                // В график передаем USD, а тултипы сами конвертируют их в выбранную валюту
-                financeChart.data.datasets[0].data = [totalIncomeUSD, totalExpenseUSD];
-                financeChart.update();
-            }
-        }
-
-        // ==================== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ ====================
-        window.onload = async function() {
-            // Инициализируем пустой график
-            initChart();
+            state.balanceUSD += (currentType === 'income' ? amountUSD : -amountUSD);
+            state.transactions.push({ type: currentType, amountUSD, date: new Date().toLocaleDateString() });
             
-            // Первичная отрисовка интерфейса (с нулевым балансом)
-            updateUI(); 
+            updateUI();
+            closeModal();
+            tg.sendData(JSON.stringify({ action: 'add', amount, type: currentType }));
+        }
 
-            // Пытаемся получить свежие курсы валют из бесплатного API
-            await fetchRates();
-        };
+        window.onload = updateUI;
     </script>
 </body>
 </html>
