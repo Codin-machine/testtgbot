@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>tailwind.config = { theme: { extend: { colors: { primary: '#0088cc', card: '#1e293b' } } } }</script>
+    <style>body { padding-bottom: 80px; font-family: sans-serif; }</style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col">
+
+    <header class="p-5 pt-8 border-b border-slate-700">
+        <h1 class="text-2xl font-bold text-center">Настройки</h1>
+    </header>
+
+    <section class="flex-1 p-5 space-y-4">
+        <div class="bg-card rounded-xl p-5">
+            <h2 class="text-lg font-semibold mb-4">Валюта отображения</h2>
+            <select id="currency-select" onchange="changeCurrency()" class="w-full bg-slate-700 rounded-lg p-3 text-white mb-4">
+                <option value="USD">Доллар (USD)</option>
+                <option value="RUB">Рубль (RUB)</option>
+                <option value="EUR">Евро (EUR)</option>
+                <option value="CNY">Юань (CNY)</option>
+                <option value="GBP">Фунт (GBP)</option>
+            </select>
+            <button onclick="fetchAPI()" class="w-full bg-primary rounded-xl p-3">Обновить курсы API</button>
+            <p id="api-status" class="text-center text-sm mt-2 text-emerald-400 hidden">Курсы обновлены!</p>
+        </div>
+    </section>
+
+    <!-- Нижнее меню -->
+    <nav class="fixed bottom-0 w-full bg-card border-t border-slate-700 pb-safe z-40">
+        <div class="flex justify-around items-center p-2">
+            <a href="index.html" class="flex flex-col items-center gap-1 w-20 py-1 text-slate-500 hover:text-white">Главная</a>
+            <a href="history.html" class="flex flex-col items-center gap-1 w-20 py-1 text-slate-500 hover:text-white">История</a>
+            <a href="settings.html" class="flex flex-col items-center gap-1 w-20 py-1 text-primary">Настройки</a>
+        </div>
+    </nav>
+
+    <script>
+        let state = JSON.parse(localStorage.getItem('financeState')) || { currency: 'USD', rates: { USD: 1, RUB: 92.5 } };
+        
+        window.onload = () => {
+            document.getElementById('currency-select').value = state.currency;
+        };
+
+        function changeCurrency() {
+            state.currency = document.getElementById('currency-select').value;
+            localStorage.setItem('financeState', JSON.stringify(state));
+        }
+
+        async function fetchAPI() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                state.rates = { USD: 1, RUB: data.rates.RUB, EUR: data.rates.EUR, CNY: data.rates.CNY, GBP: data.rates.GBP };
+                localStorage.setItem('financeState', JSON.stringify(state));
+                document.getElementById('api-status').classList.remove('hidden');
+                setTimeout(() => document.getElementById('api-status').classList.add('hidden'), 2000);
+            } catch (e) {
+                alert('Ошибка API');
+            }
+        }
+    </script>
+</body>
+</html>
