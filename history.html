@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>tailwind.config = { theme: { extend: { colors: { primary: '#0088cc', card: '#1e293b' } } } }</script>
+    <style>body { padding-bottom: 80px; font-family: sans-serif; }</style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col">
+
+    <header class="p-5 pt-8 border-b border-slate-700">
+        <h1 class="text-2xl font-bold text-center">История</h1>
+    </header>
+
+    <section class="flex-1 p-5 overflow-y-auto">
+        <div id="transactions-list" class="space-y-3"></div>
+    </section>
+
+    <!-- Нижнее меню -->
+    <nav class="fixed bottom-0 w-full bg-card border-t border-slate-700 pb-safe z-40">
+        <div class="flex justify-around items-center p-2">
+            <a href="index.html" class="flex flex-col items-center gap-1 w-20 py-1 text-slate-500 hover:text-white">Главная</a>
+            <a href="history.html" class="flex flex-col items-center gap-1 w-20 py-1 text-primary">История</a>
+            <a href="settings.html" class="flex flex-col items-center gap-1 w-20 py-1 text-slate-500 hover:text-white">Настройки</a>
+        </div>
+    </nav>
+
+    <script>
+        const state = JSON.parse(localStorage.getItem('financeState')) || { transactions: [], currency: 'USD', rates: { USD: 1 } };
+        const symbols = { USD: '$', RUB: '₽', EUR: '€', CNY: '¥', GBP: '£' };
+
+        window.onload = () => {
+            const list = document.getElementById('transactions-list');
+            const rate = state.rates[state.currency] || 1;
+
+            if (state.transactions.length === 0) {
+                list.innerHTML = '<p class="text-center text-slate-500 mt-10">Нет транзакций</p>';
+                return;
+            }
+
+            list.innerHTML = state.transactions.slice().reverse().map(tx => {
+                const isInc = tx.type === 'income';
+                const money = (tx.amountUSD * rate).toFixed(2);
+                return `
+                    <div class="bg-card rounded-xl p-4 flex justify-between">
+                        <span>${isInc ? '📥 Доход' : '📤 Расход'}</span>
+                        <span class="${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}${money} ${symbols[state.currency]}</span>
+                    </div>`;
+            }).join('');
+        };
+    </script>
+</body>
+</html>
