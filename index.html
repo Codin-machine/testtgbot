@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Финансы</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         :root {
             --bg: #1a1814;
@@ -20,6 +20,8 @@
             --red: #cd8b8b;
             --red-bg: rgba(205, 139, 139, 0.12);
             --border: rgba(255, 255, 255, 0.06);
+            --blue: #7c9eb8;
+            --blue-bg: rgba(124, 158, 184, 0.12);
         }
 
         * {
@@ -38,30 +40,19 @@
             line-height: 1.5;
         }
 
-        /* ===== PAGES ===== */
         .page {
             display: none;
             padding: 20px 16px;
             animation: fadeIn 0.3s ease;
         }
 
-        .page.active {
-            display: block;
-        }
+        .page.active { display: block; }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== HEADER ===== */
         .header {
             text-align: center;
             padding: 12px 0 24px;
@@ -73,7 +64,6 @@
             color: var(--text);
         }
 
-        /* ===== BALANCE ===== */
         .balance-card {
             background: var(--bg-card);
             border-radius: 20px;
@@ -96,17 +86,9 @@
             margin-bottom: 4px;
         }
 
-        .balance-value.positive {
-            color: var(--green);
-        }
-
-        .balance-value.negative {
-            color: var(--red);
-        }
-
-        .balance-value.zero {
-            color: var(--text);
-        }
+        .balance-value.positive { color: var(--green); }
+        .balance-value.negative { color: var(--red); }
+        .balance-value.zero { color: var(--text); }
 
         .balance-converted {
             font-size: 14px;
@@ -140,13 +122,8 @@
             font-weight: 600;
         }
 
-        .summary-value.income {
-            color: var(--green);
-        }
-
-        .summary-value.expense {
-            color: var(--red);
-        }
+        .summary-value.income { color: var(--green); }
+        .summary-value.expense { color: var(--red); }
 
         /* ===== CHART ===== */
         .chart-section {
@@ -159,8 +136,15 @@
         .chart-title {
             font-size: 14px;
             color: var(--text-dim);
-            margin-bottom: 20px;
+            margin-bottom: 8px;
             text-align: center;
+        }
+
+        .chart-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 16px;
         }
 
         .chart-container {
@@ -173,11 +157,17 @@
             position: relative;
             width: 160px;
             height: 160px;
+            cursor: pointer;
         }
 
         #pieChart {
             width: 100%;
             height: 100%;
+            transition: transform 0.2s;
+        }
+
+        .chart-wrapper:active #pieChart {
+            transform: scale(0.97);
         }
 
         .chart-center {
@@ -193,6 +183,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            pointer-events: none;
         }
 
         .chart-center-label {
@@ -222,6 +213,14 @@
             gap: 8px;
             font-size: 13px;
             color: var(--text-dim);
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .legend-item:active {
+            background: rgba(255,255,255,0.05);
         }
 
         .legend-dot {
@@ -230,13 +229,8 @@
             border-radius: 50%;
         }
 
-        .legend-dot.income {
-            background: var(--green);
-        }
-
-        .legend-dot.expense {
-            background: var(--red);
-        }
+        .legend-dot.income { background: var(--green); }
+        .legend-dot.expense { background: var(--red); }
 
         .chart-empty {
             text-align: center;
@@ -317,13 +311,8 @@
             font-size: 20px;
         }
 
-        .tx-icon.income {
-            background: var(--green-bg);
-        }
-
-        .tx-icon.expense {
-            background: var(--red-bg);
-        }
+        .tx-icon.income { background: var(--green-bg); }
+        .tx-icon.expense { background: var(--red-bg); }
 
         .tx-info {
             flex: 1;
@@ -357,13 +346,8 @@
             font-weight: 600;
         }
 
-        .tx-amount.income {
-            color: var(--green);
-        }
-
-        .tx-amount.expense {
-            color: var(--red);
-        }
+        .tx-amount.income { color: var(--green); }
+        .tx-amount.expense { color: var(--red); }
 
         .empty-state {
             text-align: center;
@@ -389,7 +373,6 @@
             line-height: 1.5;
         }
 
-        /* ===== DAY GROUP ===== */
         .day-group {
             margin-bottom: 24px;
         }
@@ -428,7 +411,7 @@
             padding: 14px 16px;
         }
 
-        .settings-row+.settings-row {
+        .settings-row + .settings-row {
             border-top: 1px solid var(--border);
         }
 
@@ -449,9 +432,8 @@
             padding: 12px 14px;
             color: var(--text);
             font-size: 15px;
-            width: 100%;
-            margin: 0 16px 16px;
             width: calc(100% - 32px);
+            margin: 0 16px 16px;
             cursor: pointer;
         }
 
@@ -485,21 +467,42 @@
             margin-top: 10px;
         }
 
-        .btn-danger {
+        .btn-settings {
             width: calc(100% - 32px);
-            margin: 8px 16px 24px;
+            margin: 8px 16px;
             padding: 14px;
-            background: var(--red-bg);
-            color: var(--red);
-            border: 1px solid rgba(205, 139, 139, 0.15);
             border-radius: 12px;
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .btn-danger:active {
+        .btn-import {
+            background: var(--blue-bg);
+            color: var(--blue);
+            border: 1px solid rgba(124, 158, 184, 0.2);
+        }
+
+        .btn-export {
+            background: var(--green-bg);
+            color: var(--green);
+            border: 1px solid rgba(143, 188, 143, 0.2);
+        }
+
+        .btn-danger {
+            background: var(--red-bg);
+            color: var(--red);
+            border: 1px solid rgba(205, 139, 139, 0.15);
+            margin-bottom: 24px;
+        }
+
+        .btn-settings:active {
             opacity: 0.8;
+            transform: scale(0.98);
         }
 
         /* ===== BOTTOM NAV ===== */
@@ -588,6 +591,9 @@
             text-align: center;
             color: var(--text);
         }
+
+        .modal-title.income { color: var(--green); }
+        .modal-title.expense { color: var(--red); }
 
         .form-group {
             margin-bottom: 20px;
@@ -717,26 +723,16 @@
             margin: 0 auto 16px;
         }
 
-        .detail-icon.income {
-            background: var(--green-bg);
-        }
-
-        .detail-icon.expense {
-            background: var(--red-bg);
-        }
+        .detail-icon.income { background: var(--green-bg); }
+        .detail-icon.expense { background: var(--red-bg); }
 
         .detail-amount {
             font-size: 32px;
             font-weight: 700;
         }
 
-        .detail-amount.income {
-            color: var(--green);
-        }
-
-        .detail-amount.expense {
-            color: var(--red);
-        }
+        .detail-amount.income { color: var(--green); }
+        .detail-amount.expense { color: var(--red); }
 
         .detail-category {
             font-size: 16px;
@@ -757,7 +753,7 @@
             padding: 14px 16px;
         }
 
-        .detail-row+.detail-row {
+        .detail-row + .detail-row {
             border-top: 1px solid var(--border);
         }
 
@@ -788,6 +784,302 @@
 
         .btn-delete-tx:active {
             opacity: 0.8;
+        }
+
+        /* ===== BREAKDOWN MODAL ===== */
+        .breakdown-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .breakdown-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .breakdown-icon.income { background: var(--green-bg); }
+        .breakdown-icon.expense { background: var(--red-bg); }
+
+        .breakdown-total {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .breakdown-total-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .breakdown-total-value.income { color: var(--green); }
+        .breakdown-total-value.expense { color: var(--red); }
+
+        .breakdown-total-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .breakdown-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: var(--bg-elevated);
+            border-radius: 14px;
+        }
+
+        .breakdown-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .breakdown-item-info {
+            flex: 1;
+        }
+
+        .breakdown-item-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .breakdown-item-count {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .breakdown-item-right {
+            text-align: right;
+        }
+
+        .breakdown-item-amount {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .breakdown-item-amount.income { color: var(--green); }
+        .breakdown-item-amount.expense { color: var(--red); }
+
+        .breakdown-item-percent {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .breakdown-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .breakdown-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .breakdown-bar-fill.income { background: var(--green); }
+        .breakdown-bar-fill.expense { background: var(--red); }
+
+        .breakdown-empty {
+            text-align: center;
+            padding: 32px;
+            color: var(--text-muted);
+        }
+
+        /* ===== IMPORT MODAL ===== */
+        .import-zone {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .import-zone:active,
+        .import-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(124, 158, 184, 0.05);
+        }
+
+        .import-zone-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.7;
+        }
+
+        .import-zone-text {
+            font-size: 15px;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .import-zone-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .import-formats {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .format-badge {
+            padding: 4px 10px;
+            background: var(--bg-elevated);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .import-info {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .import-info-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .import-info-text {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        .import-info code {
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        .import-preview {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .import-preview-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .import-preview-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .import-preview-item:last-child {
+            border-bottom: none;
+        }
+
+        .import-preview-cat {
+            color: var(--text);
+        }
+
+        .import-preview-amount.income { color: var(--green); }
+        .import-preview-amount.expense { color: var(--red); }
+
+        .import-stats {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .import-stat {
+            text-align: center;
+        }
+
+        .import-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .import-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .btn-import-confirm {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-import-confirm:active {
+            opacity: 0.9;
+            transform: scale(0.98);
+        }
+
+        .import-error {
+            background: var(--red-bg);
+            border: 1px solid rgba(205, 139, 139, 0.2);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 20px;
+            color: var(--red);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .import-loading {
+            text-align: center;
+            padding: 40px 20px;
         }
 
         /* ===== CONFIRM MODAL ===== */
@@ -872,7 +1164,6 @@
             cursor: pointer;
         }
 
-        /* Loading */
         .loading {
             display: inline-block;
             width: 18px;
@@ -884,17 +1175,16 @@
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
 
-        ::-webkit-scrollbar {
-            width: 0;
+        .hidden-input {
+            display: none;
         }
+
+        ::-webkit-scrollbar { width: 0; }
     </style>
 </head>
-
 <body>
     <!-- ===== MAIN PAGE ===== -->
     <div class="page active" id="pageMain">
@@ -920,8 +1210,9 @@
 
         <div class="chart-section" id="chartSection">
             <div class="chart-title">Соотношение доходов и расходов</div>
+            <div class="chart-hint" id="chartHint">Нажмите на сектор для детализации</div>
             <div class="chart-container" id="chartContainer">
-                <div class="chart-wrapper">
+                <div class="chart-wrapper" id="chartWrapper">
                     <canvas id="pieChart"></canvas>
                     <div class="chart-center">
                         <div class="chart-center-label">Оборот</div>
@@ -930,11 +1221,11 @@
                 </div>
             </div>
             <div class="chart-legend" id="chartLegend">
-                <div class="legend-item">
+                <div class="legend-item" id="legendIncomeBtn">
                     <div class="legend-dot income"></div>
                     <span id="legendIncome">0%</span>
                 </div>
-                <div class="legend-item">
+                <div class="legend-item" id="legendExpenseBtn">
                     <div class="legend-dot expense"></div>
                     <span id="legendExpense">0%</span>
                 </div>
@@ -1010,14 +1301,16 @@
         </div>
 
         <div class="settings-section">
-            <div class="settings-title">Данные</div>
+            <div class="settings-title">Импорт и экспорт</div>
             <div class="settings-row">
-                <span class="settings-row-label">Хранение</span>
-                <span class="settings-row-value">Локально на устройстве</span>
+                <span class="settings-row-label">Форматы</span>
+                <span class="settings-row-value">CSV, PDF</span>
             </div>
         </div>
 
-        <button class="btn-danger" id="btnClearAll">Удалить все данные</button>
+        <button class="btn-settings btn-import" id="btnImport">📥 Импорт данных</button>
+        <button class="btn-settings btn-export" id="btnExport">📤 Экспорт в CSV</button>
+        <button class="btn-settings btn-danger" id="btnClearAll">🗑️ Удалить все данные</button>
     </div>
 
     <!-- ===== BOTTOM NAV ===== -->
@@ -1041,11 +1334,10 @@
         <div class="modal">
             <div class="modal-handle"></div>
             <div class="modal-title" id="modalTitle">Новый доход</div>
-
+            
             <div class="form-group">
                 <label class="form-label">Сумма</label>
-                <input type="number" class="form-input amount-input" id="inputAmount" placeholder="0 ₽"
-                    inputmode="decimal" min="0.01" step="0.01">
+                <input type="number" class="form-input amount-input" id="inputAmount" placeholder="0 ₽" inputmode="decimal" min="0.01" step="0.01">
             </div>
 
             <div class="form-group">
@@ -1055,8 +1347,7 @@
 
             <div class="form-group">
                 <label class="form-label">Комментарий (необязательно)</label>
-                <input type="text" class="form-input" id="inputComment" placeholder="Например: обед с коллегами"
-                    maxlength="100">
+                <input type="text" class="form-input" id="inputComment" placeholder="Например: обед с коллегами" maxlength="100">
             </div>
 
             <button class="btn-submit income" id="btnSubmit">Добавить</button>
@@ -1090,6 +1381,88 @@
         </div>
     </div>
 
+    <!-- ===== BREAKDOWN MODAL ===== -->
+    <div class="modal-overlay" id="breakdownModal">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <div class="breakdown-header">
+                <div class="breakdown-icon" id="breakdownIcon">📈</div>
+                <div class="modal-title" id="breakdownTitle">Доходы</div>
+            </div>
+            <div class="breakdown-total">
+                <div class="breakdown-total-value" id="breakdownTotalValue">0 ₽</div>
+                <div class="breakdown-total-label" id="breakdownTotalLabel">Всего за всё время</div>
+            </div>
+            <div class="breakdown-list" id="breakdownList"></div>
+            <div class="breakdown-empty" id="breakdownEmpty" style="display:none;">
+                Нет операций в этой категории
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== IMPORT MODAL ===== -->
+    <div class="modal-overlay" id="importModal">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <div class="modal-title">📥 Импорт данных</div>
+
+            <div id="importUpload">
+                <div class="import-zone" id="importZone">
+                    <div class="import-zone-icon">📁</div>
+                    <div class="import-zone-text">Нажмите для выбора файла</div>
+                    <div class="import-zone-hint">или перетащите файл сюда</div>
+                    <div class="import-formats">
+                        <span class="format-badge">CSV</span>
+                        <span class="format-badge">PDF</span>
+                    </div>
+                </div>
+
+                <div class="import-info">
+                    <div class="import-info-title">ℹ️ Формат CSV</div>
+                    <div class="import-info-text">
+                        Файл должен содержать колонки:<br>
+                        <code>дата</code>, <code>тип</code>, <code>категория</code>, <code>сумма</code>, <code>комментарий</code><br><br>
+                        Пример строки:<br>
+                        <code>2024-01-15,income,salary,50000,Зарплата</code>
+                    </div>
+                </div>
+            </div>
+
+            <div id="importLoading" class="import-loading" style="display:none;">
+                <div class="loading"></div>
+                <div style="margin-top: 16px; color: var(--text-dim);">Обработка файла...</div>
+            </div>
+
+            <div id="importError" class="import-error" style="display:none;"></div>
+
+            <div id="importPreview" style="display:none;">
+                <div class="import-stats">
+                    <div class="import-stat">
+                        <div class="import-stat-value" id="importCount">0</div>
+                        <div class="import-stat-label">Операций</div>
+                    </div>
+                    <div class="import-stat">
+                        <div class="import-stat-value" id="importIncome">0</div>
+                        <div class="import-stat-label">Доходов</div>
+                    </div>
+                    <div class="import-stat">
+                        <div class="import-stat-value" id="importExpense">0</div>
+                        <div class="import-stat-label">Расходов</div>
+                    </div>
+                </div>
+
+                <div class="import-preview">
+                    <div class="import-preview-title">Предпросмотр (первые 10)</div>
+                    <div id="importPreviewList"></div>
+                </div>
+
+                <button class="btn-import-confirm" id="btnImportConfirm">Импортировать</button>
+            </div>
+
+            <input type="file" class="hidden-input" id="fileInput" accept=".csv,.pdf">
+        </div>
+    </div>
+
     <!-- ===== CONFIRM MODAL ===== -->
     <div class="confirm-modal" id="confirmModal">
         <div class="confirm-box">
@@ -1104,6 +1477,11 @@
     </div>
 
     <script>
+        // ===== PDF.js CONFIG =====
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
         // ===== TELEGRAM INIT =====
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -1116,41 +1494,75 @@
         // ===== CATEGORIES =====
         const CATEGORIES = {
             income: [
-                {id: 'salary', icon: '💼', name: 'Зарплата'},
-                {id: 'freelance', icon: '💻', name: 'Фриланс'},
-                {id: 'invest', icon: '📈', name: 'Инвестиции'},
-                {id: 'gift', icon: '🎁', name: 'Подарок'},
-                {id: 'cashback', icon: '💳', name: 'Кэшбэк'},
-                {id: 'sale', icon: '🏷️', name: 'Продажа'},
-                {id: 'rental', icon: '🏠', name: 'Аренда'},
-                {id: 'bonus', icon: '⭐', name: 'Премия'},
-                {id: 'refund', icon: '↩️', name: 'Возврат'},
-                {id: 'dividends', icon: '💹', name: 'Дивиденды'},
-                {id: 'grant', icon: '🎓', name: 'Стипендия'},
-                {id: 'other_in', icon: '💰', name: 'Другое'}
+                { id: 'salary', icon: '💼', name: 'Зарплата' },
+                { id: 'freelance', icon: '💻', name: 'Фриланс' },
+                { id: 'invest', icon: '📈', name: 'Инвестиции' },
+                { id: 'gift', icon: '🎁', name: 'Подарок' },
+                { id: 'cashback', icon: '💳', name: 'Кэшбэк' },
+                { id: 'sale', icon: '🏷️', name: 'Продажа' },
+                { id: 'rental', icon: '🏠', name: 'Аренда' },
+                { id: 'bonus', icon: '⭐', name: 'Премия' },
+                { id: 'refund', icon: '↩️', name: 'Возврат' },
+                { id: 'dividends', icon: '💹', name: 'Дивиденды' },
+                { id: 'grant', icon: '🎓', name: 'Стипендия' },
+                { id: 'other_in', icon: '💰', name: 'Другое' }
             ],
             expense: [
-                {id: 'food', icon: '🛒', name: 'Продукты'},
-                {id: 'cafe', icon: '☕', name: 'Кафе'},
-                {id: 'transport', icon: '🚗', name: 'Транспорт'},
-                {id: 'home', icon: '🏠', name: 'Жильё'},
-                {id: 'utilities', icon: '💡', name: 'ЖКХ'},
-                {id: 'health', icon: '💊', name: 'Здоровье'},
-                {id: 'beauty', icon: '💅', name: 'Красота'},
-                {id: 'clothes', icon: '👕', name: 'Одежда'},
-                {id: 'education', icon: '📚', name: 'Обучение'},
-                {id: 'fun', icon: '🎮', name: 'Развлечения'},
-                {id: 'subscriptions', icon: '📺', name: 'Подписки'},
-                {id: 'telecom', icon: '📱', name: 'Связь'},
-                {id: 'travel', icon: '✈️', name: 'Путешествия'},
-                {id: 'gifts', icon: '🎁', name: 'Подарки'},
-                {id: 'pets', icon: '🐾', name: 'Питомцы'},
-                {id: 'sport', icon: '🏃', name: 'Спорт'},
-                {id: 'kids', icon: '👶', name: 'Дети'},
-                {id: 'car', icon: '⛽', name: 'Авто'},
-                {id: 'repairs', icon: '🔧', name: 'Ремонт'},
-                {id: 'other_out', icon: '📦', name: 'Другое'}
+                { id: 'food', icon: '🛒', name: 'Продукты' },
+                { id: 'cafe', icon: '☕', name: 'Кафе' },
+                { id: 'transport', icon: '🚗', name: 'Транспорт' },
+                { id: 'home', icon: '🏠', name: 'Жильё' },
+                { id: 'utilities', icon: '💡', name: 'ЖКХ' },
+                { id: 'health', icon: '💊', name: 'Здоровье' },
+                { id: 'beauty', icon: '💅', name: 'Красота' },
+                { id: 'clothes', icon: '👕', name: 'Одежда' },
+                { id: 'education', icon: '📚', name: 'Обучение' },
+                { id: 'fun', icon: '🎮', name: 'Развлечения' },
+                { id: 'subscriptions', icon: '📺', name: 'Подписки' },
+                { id: 'telecom', icon: '📱', name: 'Связь' },
+                { id: 'travel', icon: '✈️', name: 'Путешествия' },
+                { id: 'gifts', icon: '🎁', name: 'Подарки' },
+                { id: 'pets', icon: '🐾', name: 'Питомцы' },
+                { id: 'sport', icon: '🏃', name: 'Спорт' },
+                { id: 'kids', icon: '👶', name: 'Дети' },
+                { id: 'car', icon: '⛽', name: 'Авто' },
+                { id: 'repairs', icon: '🔧', name: 'Ремонт' },
+                { id: 'other_out', icon: '📦', name: 'Другое' }
             ]
+        };
+
+        const CATEGORY_MAP = {
+            'зарплата': 'salary', 'salary': 'salary',
+            'фриланс': 'freelance', 'freelance': 'freelance',
+            'инвестиции': 'invest', 'invest': 'invest',
+            'подарок': 'gift', 'gift': 'gift',
+            'кэшбэк': 'cashback', 'cashback': 'cashback',
+            'продажа': 'sale', 'sale': 'sale',
+            'аренда': 'rental', 'rental': 'rental',
+            'премия': 'bonus', 'bonus': 'bonus',
+            'возврат': 'refund', 'refund': 'refund',
+            'дивиденды': 'dividends', 'dividends': 'dividends',
+            'стипендия': 'grant', 'grant': 'grant',
+            'продукты': 'food', 'еда': 'food', 'food': 'food',
+            'кафе': 'cafe', 'cafe': 'cafe', 'ресторан': 'cafe',
+            'транспорт': 'transport', 'transport': 'transport',
+            'жильё': 'home', 'home': 'home',
+            'жкх': 'utilities', 'utilities': 'utilities',
+            'здоровье': 'health', 'health': 'health',
+            'красота': 'beauty', 'beauty': 'beauty',
+            'одежда': 'clothes', 'clothes': 'clothes',
+            'обучение': 'education', 'education': 'education',
+            'развлечения': 'fun', 'fun': 'fun',
+            'подписки': 'subscriptions', 'subscriptions': 'subscriptions',
+            'связь': 'telecom', 'telecom': 'telecom',
+            'путешествия': 'travel', 'travel': 'travel',
+            'подарки': 'gifts', 'gifts': 'gifts',
+            'питомцы': 'pets', 'pets': 'pets',
+            'спорт': 'sport', 'sport': 'sport',
+            'дети': 'kids', 'kids': 'kids',
+            'авто': 'car', 'car': 'car',
+            'ремонт': 'repairs', 'repairs': 'repairs',
+            'другое': 'other_out', 'other': 'other_out'
         };
 
         // ===== STATE =====
@@ -1159,6 +1571,8 @@
         let currentType = 'income';
         let selectedCategory = null;
         let currentTxId = null;
+        let importedTransactions = [];
+        let chartAngles = { incomeStart: 0, incomeEnd: 0, expenseStart: 0, expenseEnd: 0 };
 
         function loadState() {
             try {
@@ -1167,7 +1581,7 @@
             } catch (e) {
                 console.error('Load error:', e);
             }
-            return {transactions: [], currency: ''};
+            return { transactions: [], currency: '' };
         }
 
         function saveState() {
@@ -1178,7 +1592,6 @@
             }
         }
 
-        // ===== DOM =====
         const $ = id => document.getElementById(id);
 
         // ===== NAVIGATION =====
@@ -1188,7 +1601,7 @@
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
                 $(btn.dataset.page).classList.add('active');
-
+                
                 if (btn.dataset.page === 'pageHistory') renderHistory();
                 if (btn.dataset.page === 'pageSettings') renderSettings();
             });
@@ -1209,11 +1622,11 @@
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const txDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
             const diff = Math.floor((today - txDay) / 86400000);
-
-            const time = d.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+            
+            const time = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
             if (diff === 0) return 'Сегодня, ' + time;
             if (diff === 1) return 'Вчера, ' + time;
-            return d.toLocaleDateString('ru-RU', {day: 'numeric', month: 'long', year: 'numeric'}) + ', ' + time;
+            return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) + ', ' + time;
         }
 
         function formatDayGroup(ts) {
@@ -1222,14 +1635,14 @@
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const txDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
             const diff = Math.floor((today - txDay) / 86400000);
-
+            
             if (diff === 0) return 'Сегодня';
             if (diff === 1) return 'Вчера';
-            return d.toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
+            return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
         }
 
         function getCat(type, id) {
-            return CATEGORIES[type]?.find(c => c.id === id) || {icon: '❓', name: id};
+            return CATEGORIES[type]?.find(c => c.id === id) || { icon: '❓', name: id };
         }
 
         // ===== CALCULATIONS =====
@@ -1239,13 +1652,35 @@
                 if (tx.type === 'income') income += tx.amount;
                 else expense += tx.amount;
             });
-            return {income, expense, balance: income - expense};
+            return { income, expense, balance: income - expense };
+        }
+
+        function calcCategoryBreakdown(type) {
+            const breakdown = {};
+            state.transactions.forEach(tx => {
+                if (tx.type !== type) return;
+                if (!breakdown[tx.category]) {
+                    breakdown[tx.category] = { amount: 0, count: 0 };
+                }
+                breakdown[tx.category].amount += tx.amount;
+                breakdown[tx.category].count++;
+            });
+            
+            const total = Object.values(breakdown).reduce((sum, v) => sum + v.amount, 0);
+            
+            return Object.entries(breakdown)
+                .map(([catId, data]) => ({
+                    catId,
+                    ...data,
+                    percent: total > 0 ? (data.amount / total * 100) : 0
+                }))
+                .sort((a, b) => b.amount - a.amount);
         }
 
         // ===== RENDER MAIN =====
         function renderMain() {
-            const {income, expense, balance} = calcTotals();
-
+            const { income, expense, balance } = calcTotals();
+            
             const balanceEl = $('mainBalance');
             balanceEl.textContent = (balance >= 0 ? '' : '−') + formatMoney(balance);
             balanceEl.className = 'balance-value ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'zero');
@@ -1253,12 +1688,12 @@
             $('summaryIncome').textContent = formatMoney(income);
             $('summaryExpense').textContent = formatMoney(expense);
 
-            // Chart
             const total = income + expense;
             const hasData = total > 0;
-
+            
             $('chartContainer').style.display = hasData ? 'flex' : 'none';
             $('chartLegend').style.display = hasData ? 'flex' : 'none';
+            $('chartHint').style.display = hasData ? 'block' : 'none';
             $('chartEmpty').style.display = hasData ? 'none' : 'block';
 
             if (hasData) {
@@ -1277,7 +1712,7 @@
             const ctx = canvas.getContext('2d');
             const size = 160;
             const dpr = window.devicePixelRatio || 1;
-
+            
             canvas.width = size * dpr;
             canvas.height = size * dpr;
             canvas.style.width = size + 'px';
@@ -1294,7 +1729,9 @@
 
             let start = -Math.PI / 2;
 
-            // Income slice
+            // Store angles for click detection
+            chartAngles.incomeStart = start;
+
             if (income > 0) {
                 const angle = (income / total) * Math.PI * 2;
                 ctx.beginPath();
@@ -1306,7 +1743,9 @@
                 start += angle;
             }
 
-            // Expense slice
+            chartAngles.incomeEnd = start;
+            chartAngles.expenseStart = start;
+
             if (expense > 0) {
                 const angle = (expense / total) * Math.PI * 2;
                 ctx.beginPath();
@@ -1315,14 +1754,123 @@
                 ctx.lineTo(cx, cy);
                 ctx.fillStyle = '#cd8b8b';
                 ctx.fill();
+                start += angle;
             }
 
-            // Inner circle
+            chartAngles.expenseEnd = start;
+
             ctx.beginPath();
             ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
             ctx.fillStyle = '#252220';
             ctx.fill();
         }
+
+        // ===== CHART CLICK HANDLER =====
+        $('chartWrapper').addEventListener('click', (e) => {
+            const { income, expense } = calcTotals();
+            if (income === 0 && expense === 0) return;
+
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            
+            // Check if click is in donut area (not center)
+            const distance = Math.sqrt(x * x + y * y);
+            const outerRadius = rect.width / 2 - 4;
+            const innerRadius = outerRadius * 0.65;
+            
+            if (distance < innerRadius || distance > outerRadius) return;
+            
+            // Calculate angle
+            let angle = Math.atan2(y, x);
+            
+            // Normalize angle to match chart drawing (starts at -PI/2)
+            if (angle < -Math.PI / 2) {
+                angle += Math.PI * 2;
+            }
+            
+            // Determine which section was clicked
+            if (income > 0 && angle >= chartAngles.incomeStart && angle < chartAngles.incomeEnd) {
+                openBreakdownModal('income');
+            } else if (expense > 0) {
+                openBreakdownModal('expense');
+            }
+            
+            haptic('light');
+        });
+
+        // Legend click handlers
+        $('legendIncomeBtn').addEventListener('click', () => {
+            const { income } = calcTotals();
+            if (income > 0) openBreakdownModal('income');
+        });
+
+        $('legendExpenseBtn').addEventListener('click', () => {
+            const { expense } = calcTotals();
+            if (expense > 0) openBreakdownModal('expense');
+        });
+
+        // ===== BREAKDOWN MODAL =====
+        function openBreakdownModal(type) {
+            const breakdown = calcCategoryBreakdown(type);
+            const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
+            
+            const isIncome = type === 'income';
+            $('breakdownIcon').textContent = isIncome ? '📈' : '📉';
+            $('breakdownIcon').className = 'breakdown-icon ' + type;
+            $('breakdownTitle').textContent = isIncome ? 'Доходы' : 'Расходы';
+            $('breakdownTitle').className = 'modal-title ' + type;
+            $('breakdownTotalValue').textContent = formatMoney(total);
+            $('breakdownTotalValue').className = 'breakdown-total-value ' + type;
+            $('breakdownTotalLabel').textContent = `${breakdown.reduce((sum, i) => sum + i.count, 0)} операций`;
+
+            if (breakdown.length === 0) {
+                $('breakdownList').style.display = 'none';
+                $('breakdownEmpty').style.display = 'block';
+            } else {
+                $('breakdownEmpty').style.display = 'none';
+                $('breakdownList').style.display = 'flex';
+                
+                $('breakdownList').innerHTML = breakdown.map(item => {
+                    const cat = getCat(type, item.catId);
+                    return `
+                        <div class="breakdown-item">
+                            <div class="breakdown-item-icon">${cat.icon}</div>
+                            <div class="breakdown-item-info">
+                                <div class="breakdown-item-name">${cat.name}</div>
+                                <div class="breakdown-item-count">${item.count} ${pluralize(item.count, 'операция', 'операции', 'операций')}</div>
+                                <div class="breakdown-bar">
+                                    <div class="breakdown-bar-fill ${type}" style="width: ${item.percent}%"></div>
+                                </div>
+                            </div>
+                            <div class="breakdown-item-right">
+                                <div class="breakdown-item-amount ${type}">${formatMoney(item.amount)}</div>
+                                <div class="breakdown-item-percent">${item.percent.toFixed(1)}%</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            $('breakdownModal').classList.add('active');
+            haptic('light');
+        }
+
+        function pluralize(n, one, few, many) {
+            const mod10 = n % 10;
+            const mod100 = n % 100;
+            if (mod10 === 1 && mod100 !== 11) return one;
+            if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+            return many;
+        }
+
+        $('breakdownModal').addEventListener('click', (e) => {
+            if (e.target === $('breakdownModal')) {
+                $('breakdownModal').classList.remove('active');
+            }
+        });
+
+        setupSwipeClose('breakdownModal');
 
         // ===== RENDER HISTORY =====
         function renderHistory() {
@@ -1340,7 +1888,6 @@
                 return;
             }
 
-            // Group by day
             const groups = {};
             sorted.forEach(tx => {
                 const day = new Date(tx.timestamp).toDateString();
@@ -1374,7 +1921,6 @@
 
             listEl.innerHTML = html;
 
-            // Bind click handlers
             listEl.querySelectorAll('.tx-item').forEach(item => {
                 item.addEventListener('click', () => openDetailModal(item.dataset.id));
             });
@@ -1388,7 +1934,7 @@
             $('statTotal').textContent = state.transactions.length;
             $('statIncome').textContent = incomeCount;
             $('statExpense').textContent = expenseCount;
-
+            
             $('currencySelect').value = state.currency || '';
             if (state.currency) updateConversion();
         }
@@ -1402,7 +1948,7 @@
                 return;
             }
 
-            const {balance} = calcTotals();
+            const { balance } = calcTotals();
             $('convertResult').style.display = 'block';
             $('convertedValue').innerHTML = '<div class="loading"></div>';
             $('convertRate').textContent = 'Загрузка курса...';
@@ -1411,16 +1957,16 @@
                 const res = await fetch(`https://api.exchangerate-api.com/v4/latest/RUB`);
                 const data = await res.json();
                 const rate = data.rates[currency];
-
+                
                 if (rate) {
                     const converted = balance * rate;
-                    const symbols = {
-                        USD: '$', EUR: '€', GBP: '£', CNY: '¥', JPY: '¥',
+                    const symbols = { 
+                        USD: '$', EUR: '€', GBP: '£', CNY: '¥', JPY: '¥', 
                         TRY: '₺', KZT: '₸', BYN: 'Br', UAH: '₴', AED: 'د.إ',
                         GEL: '₾', AMD: '֏'
                     };
                     const sym = symbols[currency] || currency;
-
+                    
                     const formattedConverted = formatMoney(converted, sym);
                     $('convertedValue').textContent = formattedConverted;
                     $('convertRate').textContent = `Курс: 1 RUB = ${rate.toFixed(6)} ${currency}`;
@@ -1429,7 +1975,6 @@
                     throw new Error('Rate not found');
                 }
             } catch (e) {
-                console.error('Conversion error:', e);
                 $('convertedValue').textContent = 'Ошибка загрузки';
                 $('convertRate').textContent = 'Попробуйте позже';
                 $('mainBalanceConverted').textContent = '';
@@ -1486,10 +2031,8 @@
             if (e.target === $('addModal')) closeAddModal();
         });
 
-        // Swipe to close
         setupSwipeClose('addModal');
 
-        // ===== SUBMIT =====
         $('btnSubmit').addEventListener('click', () => {
             const amount = parseFloat($('inputAmount').value);
             if (!amount || amount <= 0) {
@@ -1569,6 +2112,290 @@
             haptic('medium');
         });
 
+        // ===== IMPORT MODAL =====
+        function openImportModal() {
+            importedTransactions = [];
+            $('importUpload').style.display = 'block';
+            $('importLoading').style.display = 'none';
+            $('importError').style.display = 'none';
+            $('importPreview').style.display = 'none';
+            $('fileInput').value = '';
+            $('importModal').classList.add('active');
+            haptic('light');
+        }
+
+        function closeImportModal() {
+            $('importModal').classList.remove('active');
+        }
+
+        $('btnImport').addEventListener('click', openImportModal);
+
+        $('importModal').addEventListener('click', (e) => {
+            if (e.target === $('importModal')) closeImportModal();
+        });
+
+        setupSwipeClose('importModal');
+
+        const importZone = $('importZone');
+        const fileInput = $('fileInput');
+
+        importZone.addEventListener('click', () => fileInput.click());
+
+        importZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            importZone.classList.add('dragover');
+        });
+
+        importZone.addEventListener('dragleave', () => {
+            importZone.classList.remove('dragover');
+        });
+
+        importZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            importZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) processFile(file);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) processFile(file);
+        });
+
+        async function processFile(file) {
+            $('importUpload').style.display = 'none';
+            $('importLoading').style.display = 'block';
+            $('importError').style.display = 'none';
+            $('importPreview').style.display = 'none';
+
+            try {
+                let transactions = [];
+
+                if (file.name.endsWith('.csv')) {
+                    transactions = await parseCSV(file);
+                } else if (file.name.endsWith('.pdf')) {
+                    transactions = await parsePDF(file);
+                } else {
+                    throw new Error('Неподдерживаемый формат файла');
+                }
+
+                if (transactions.length === 0) {
+                    throw new Error('Не найдено операций для импорта');
+                }
+
+                importedTransactions = transactions;
+                showImportPreview(transactions);
+
+            } catch (error) {
+                $('importLoading').style.display = 'none';
+                $('importError').style.display = 'block';
+                $('importError').textContent = error.message || 'Ошибка при обработке файла';
+                $('importUpload').style.display = 'block';
+                haptic('error');
+            }
+        }
+
+        async function parseCSV(file) {
+            const text = await file.text();
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            if (lines.length < 2) throw new Error('Файл пуст');
+
+            const transactions = [];
+            const delimiter = lines[0].includes(';') ? ';' : ',';
+
+            for (let i = 1; i < lines.length; i++) {
+                const parts = parseCSVLine(lines[i], delimiter);
+                if (parts.length < 4) continue;
+
+                try {
+                    const tx = parseCSVRow(parts);
+                    if (tx) transactions.push(tx);
+                } catch (e) {}
+            }
+
+            return transactions;
+        }
+
+        function parseCSVLine(line, delimiter) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === delimiter && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else current += char;
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        function parseCSVRow(parts) {
+            let date, type, category, amount, comment;
+
+            if (parts.length >= 5) {
+                [date, type, category, amount, comment] = parts;
+            } else {
+                [date, category, amount, comment] = parts;
+                type = null;
+            }
+
+            amount = parseFloat(amount.replace(/[^\d.-]/g, '').replace(',', '.'));
+            if (isNaN(amount) || amount === 0) return null;
+
+            if (!type || (type !== 'income' && type !== 'expense')) {
+                type = amount > 0 ? 'income' : 'expense';
+            }
+            amount = Math.abs(amount);
+
+            const catLower = category.toLowerCase().trim();
+            const mappedCat = CATEGORY_MAP[catLower] || (type === 'income' ? 'other_in' : 'other_out');
+
+            let timestamp;
+            try {
+                timestamp = new Date(date).getTime();
+                if (isNaN(timestamp)) {
+                    const p = date.split(/[./-]/);
+                    if (p.length === 3) timestamp = new Date(p[2], p[1] - 1, p[0]).getTime();
+                }
+                if (isNaN(timestamp)) timestamp = Date.now();
+            } catch { timestamp = Date.now(); }
+
+            return {
+                id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+                type, category: mappedCat,
+                amount: Math.round(amount * 100) / 100,
+                comment: comment?.trim() || '',
+                timestamp
+            };
+        }
+
+        async function parsePDF(file) {
+            if (!window.pdfjsLib) throw new Error('PDF библиотека не загружена');
+
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                fullText += textContent.items.map(item => item.str).join(' ') + '\n';
+            }
+
+            return parsePDFText(fullText);
+        }
+
+        function parsePDFText(text) {
+            const transactions = [];
+            const lines = text.split('\n');
+            
+            for (const line of lines) {
+                const amountMatch = line.match(/([+-]?\s*[\d\s]+[.,]\d{2})\s*(?:₽|руб|RUB)?/);
+                
+                if (amountMatch) {
+                    let amount = parseFloat(amountMatch[1].replace(/\s/g, '').replace(',', '.'));
+                    if (isNaN(amount) || amount === 0) continue;
+
+                    const type = amount < 0 ? 'expense' : 'income';
+                    amount = Math.abs(amount);
+
+                    let category = type === 'income' ? 'other_in' : 'other_out';
+                    const lineLower = line.toLowerCase();
+                    
+                    for (const [keyword, catId] of Object.entries(CATEGORY_MAP)) {
+                        if (lineLower.includes(keyword)) { category = catId; break; }
+                    }
+
+                    let timestamp = Date.now();
+                    const dateMatch = line.match(/(\d{2}[./-]\d{2}[./-]\d{4})/);
+                    if (dateMatch) {
+                        const parts = dateMatch[1].split(/[./-]/);
+                        if (parts.length === 3) {
+                            const parsed = new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+                            if (!isNaN(parsed)) timestamp = parsed;
+                        }
+                    }
+
+                    transactions.push({
+                        id: Date.now().toString(36) + Math.random().toString(36).slice(2) + transactions.length,
+                        type, category,
+                        amount: Math.round(amount * 100) / 100,
+                        comment: '', timestamp
+                    });
+                }
+            }
+
+            return transactions;
+        }
+
+        function showImportPreview(transactions) {
+            $('importLoading').style.display = 'none';
+            $('importPreview').style.display = 'block';
+
+            const incomeCount = transactions.filter(t => t.type === 'income').length;
+            const expenseCount = transactions.filter(t => t.type === 'expense').length;
+
+            $('importCount').textContent = transactions.length;
+            $('importIncome').textContent = incomeCount;
+            $('importExpense').textContent = expenseCount;
+
+            $('importPreviewList').innerHTML = transactions.slice(0, 10).map(tx => {
+                const cat = getCat(tx.type, tx.category);
+                const sign = tx.type === 'income' ? '+' : '−';
+                return `
+                    <div class="import-preview-item">
+                        <span class="import-preview-cat">${cat.icon} ${cat.name}</span>
+                        <span class="import-preview-amount ${tx.type}">${sign}${formatMoney(tx.amount)}</span>
+                    </div>
+                `;
+            }).join('');
+
+            haptic('success');
+        }
+
+        $('btnImportConfirm').addEventListener('click', () => {
+            if (importedTransactions.length === 0) return;
+
+            state.transactions.push(...importedTransactions);
+            saveState();
+            renderMain();
+            renderHistory();
+            renderSettings();
+            closeImportModal();
+            haptic('success');
+        });
+
+        $('btnExport').addEventListener('click', () => {
+            if (state.transactions.length === 0) {
+                alert('Нет данных для экспорта');
+                return;
+            }
+
+            const headers = ['Дата', 'Тип', 'Категория', 'Сумма', 'Комментарий'];
+            const rows = state.transactions.map(tx => {
+                const cat = getCat(tx.type, tx.category);
+                const date = new Date(tx.timestamp).toLocaleDateString('ru-RU');
+                return [date, tx.type, cat.name, tx.amount, tx.comment || ''].map(v => `"${v}"`).join(',');
+            });
+
+            const csv = [headers.join(','), ...rows].join('\n');
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `finance_export_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            haptic('success');
+        });
+
         // ===== CONFIRM MODAL =====
         $('btnCancelConfirm').addEventListener('click', () => {
             $('confirmModal').classList.remove('active');
@@ -1586,7 +2413,6 @@
                 renderHistory();
                 closeDetailModal();
             } else {
-                // Clear all
                 state.transactions = [];
                 state.currency = '';
                 saveState();
@@ -1606,37 +2432,25 @@
             haptic('medium');
         });
 
-        // ===== SWIPE HELPER =====
         function setupSwipeClose(modalId) {
             const overlay = $(modalId);
             const modal = overlay.querySelector('.modal');
             let startY = 0;
 
-            modal.addEventListener('touchstart', e => {
-                startY = e.touches[0].clientY;
-            }, {passive: true});
-
+            modal.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
             modal.addEventListener('touchmove', e => {
-                if (e.touches[0].clientY - startY > 80) {
-                    overlay.classList.remove('active');
-                }
-            }, {passive: true});
+                if (e.touches[0].clientY - startY > 80) overlay.classList.remove('active');
+            }, { passive: true });
         }
 
-        // ===== HAPTIC =====
         function haptic(type) {
             if (tg?.HapticFeedback) {
-                if (type === 'light' || type === 'medium') {
-                    tg.HapticFeedback.impactOccurred(type);
-                } else {
-                    tg.HapticFeedback.notificationOccurred(type);
-                }
+                if (type === 'light' || type === 'medium') tg.HapticFeedback.impactOccurred(type);
+                else tg.HapticFeedback.notificationOccurred(type);
             }
         }
 
-        // ===== INIT =====
         renderMain();
     </script>
 </body>
-
 </html>
