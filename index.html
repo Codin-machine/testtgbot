@@ -6,6 +6,7 @@
     <title>Финансы</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --bg: #1a1814;
@@ -22,6 +23,8 @@
             --border: rgba(255, 255, 255, 0.06);
             --blue: #7c9eb8;
             --blue-bg: rgba(124, 158, 184, 0.12);
+            --yellow: #d4a574;
+            --yellow-bg: rgba(212, 165, 116, 0.12);
         }
 
         * {
@@ -76,7 +79,6 @@
             font-size: 13px;
             color: var(--text-dim);
             margin-bottom: 8px;
-            letter-spacing: 0.3px;
         }
 
         .balance-value {
@@ -105,9 +107,7 @@
             border-top: 1px solid var(--border);
         }
 
-        .summary-item {
-            text-align: center;
-        }
+        .summary-item { text-align: center; }
 
         .summary-label {
             font-size: 11px;
@@ -125,7 +125,6 @@
         .summary-value.income { color: var(--green); }
         .summary-value.expense { color: var(--red); }
 
-        /* ===== CHART ===== */
         .chart-section {
             background: var(--bg-card);
             border-radius: 20px;
@@ -190,7 +189,6 @@
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .chart-center-value {
@@ -245,7 +243,6 @@
             opacity: 0.6;
         }
 
-        /* ===== ACTIONS ===== */
         .actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -279,7 +276,6 @@
             border: 1px solid rgba(205, 139, 139, 0.2);
         }
 
-        /* ===== TRANSACTIONS LIST ===== */
         .tx-list {
             display: flex;
             flex-direction: column;
@@ -387,7 +383,6 @@
             padding-left: 4px;
         }
 
-        /* ===== SETTINGS ===== */
         .settings-section {
             background: var(--bg-card);
             border-radius: 16px;
@@ -505,7 +500,6 @@
             transform: scale(0.98);
         }
 
-        /* ===== BOTTOM NAV ===== */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -542,7 +536,6 @@
             font-size: 22px;
         }
 
-        /* ===== MODALS ===== */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -702,7 +695,6 @@
             color: var(--bg);
         }
 
-        /* ===== DETAIL MODAL ===== */
         .detail-modal .modal {
             padding: 24px;
         }
@@ -786,7 +778,6 @@
             opacity: 0.8;
         }
 
-        /* ===== BREAKDOWN MODAL ===== */
         .breakdown-header {
             display: flex;
             align-items: center;
@@ -947,8 +938,9 @@
         .import-formats {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 8px;
             margin-top: 12px;
+            flex-wrap: wrap;
         }
 
         .format-badge {
@@ -960,11 +952,42 @@
             font-weight: 500;
         }
 
+        .format-badge.recommended {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+
+        .import-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .import-tab {
+            flex: 1;
+            padding: 10px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .import-tab.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
         .import-info {
             background: var(--bg-elevated);
             border-radius: 12px;
             padding: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .import-info-title {
@@ -991,12 +1014,30 @@
             font-size: 11px;
         }
 
+        .import-warning {
+            background: var(--yellow-bg);
+            border: 1px solid rgba(212, 165, 116, 0.2);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+            color: var(--yellow);
+            font-size: 13px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .import-warning-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
         .import-preview {
             background: var(--bg-elevated);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 20px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
         }
 
@@ -1005,12 +1046,22 @@
             font-weight: 600;
             color: var(--text);
             margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .import-preview-edit {
+            font-size: 12px;
+            color: var(--accent);
+            cursor: pointer;
         }
 
         .import-preview-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            align-items: center;
+            padding: 10px 0;
             border-bottom: 1px solid var(--border);
             font-size: 13px;
         }
@@ -1019,12 +1070,37 @@
             border-bottom: none;
         }
 
+        .import-preview-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .import-preview-cat {
             color: var(--text);
         }
 
+        .import-preview-date {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
         .import-preview-amount.income { color: var(--green); }
         .import-preview-amount.expense { color: var(--red); }
+
+        .import-preview-remove {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: var(--red-bg);
+            color: var(--red);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         .import-stats {
             display: flex;
@@ -1066,6 +1142,11 @@
             transform: scale(0.98);
         }
 
+        .btn-import-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .import-error {
             background: var(--red-bg);
             border: 1px solid rgba(205, 139, 139, 0.2);
@@ -1082,7 +1163,6 @@
             padding: 40px 20px;
         }
 
-        /* ===== CONFIRM MODAL ===== */
         .confirm-modal {
             position: fixed;
             inset: 0;
@@ -1266,16 +1346,14 @@
                 <option value="">Выберите валюту</option>
                 <option value="USD">🇺🇸 USD — Доллар США</option>
                 <option value="EUR">🇪🇺 EUR — Евро</option>
-                <option value="GBP">🇬🇧 GBP — Фунт стерлингов</option>
-                <option value="CNY">🇨🇳 CNY — Китайский юань</option>
-                <option value="JPY">🇯🇵 JPY — Японская иена</option>
-                <option value="TRY">🇹🇷 TRY — Турецкая лира</option>
-                <option value="KZT">🇰🇿 KZT — Казахский тенге</option>
-                <option value="BYN">🇧🇾 BYN — Белорусский рубль</option>
-                <option value="UAH">🇺🇦 UAH — Украинская гривна</option>
-                <option value="AED">🇦🇪 AED — Дирхам ОАЭ</option>
-                <option value="GEL">🇬🇪 GEL — Грузинский лари</option>
-                <option value="AMD">🇦🇲 AMD — Армянский драм</option>
+                <option value="GBP">🇬🇧 GBP — Фунт</option>
+                <option value="CNY">🇨🇳 CNY — Юань</option>
+                <option value="TRY">🇹🇷 TRY — Лира</option>
+                <option value="KZT">🇰🇿 KZT — Тенге</option>
+                <option value="BYN">🇧🇾 BYN — Бел. рубль</option>
+                <option value="UAH">🇺🇦 UAH — Гривна</option>
+                <option value="GEL">🇬🇪 GEL — Лари</option>
+                <option value="AMD">🇦🇲 AMD — Драм</option>
             </select>
             <div class="convert-result" id="convertResult" style="display:none;">
                 <div class="convert-result-label">Баланс в выбранной валюте</div>
@@ -1304,7 +1382,7 @@
             <div class="settings-title">Импорт и экспорт</div>
             <div class="settings-row">
                 <span class="settings-row-label">Форматы</span>
-                <span class="settings-row-value">CSV, PDF</span>
+                <span class="settings-row-value">CSV, XLSX, PDF</span>
             </div>
         </div>
 
@@ -1391,11 +1469,11 @@
             </div>
             <div class="breakdown-total">
                 <div class="breakdown-total-value" id="breakdownTotalValue">0 ₽</div>
-                <div class="breakdown-total-label" id="breakdownTotalLabel">Всего за всё время</div>
+                <div class="breakdown-total-label" id="breakdownTotalLabel">Всего</div>
             </div>
             <div class="breakdown-list" id="breakdownList"></div>
             <div class="breakdown-empty" id="breakdownEmpty" style="display:none;">
-                Нет операций в этой категории
+                Нет операций
             </div>
         </div>
     </div>
@@ -1412,18 +1490,42 @@
                     <div class="import-zone-text">Нажмите для выбора файла</div>
                     <div class="import-zone-hint">или перетащите файл сюда</div>
                     <div class="import-formats">
-                        <span class="format-badge">CSV</span>
+                        <span class="format-badge recommended">CSV ✓</span>
+                        <span class="format-badge recommended">XLSX ✓</span>
                         <span class="format-badge">PDF</span>
                     </div>
                 </div>
 
-                <div class="import-info">
-                    <div class="import-info-title">ℹ️ Формат CSV</div>
+                <div class="import-tabs">
+                    <div class="import-tab active" data-tab="csv">CSV / XLSX</div>
+                    <div class="import-tab" data-tab="pdf">PDF</div>
+                </div>
+
+                <div id="importInfoCSV" class="import-info">
+                    <div class="import-info-title">📋 Формат таблицы</div>
                     <div class="import-info-text">
-                        Файл должен содержать колонки:<br>
-                        <code>дата</code>, <code>тип</code>, <code>категория</code>, <code>сумма</code>, <code>комментарий</code><br><br>
-                        Пример строки:<br>
-                        <code>2024-01-15,income,salary,50000,Зарплата</code>
+                        <strong>Обязательные колонки:</strong><br>
+                        • <code>дата</code> или <code>date</code> — дата операции<br>
+                        • <code>сумма</code> или <code>amount</code> — сумма (отрицательная = расход)<br><br>
+                        <strong>Опциональные колонки:</strong><br>
+                        • <code>тип</code> / <code>type</code> — income или expense<br>
+                        • <code>категория</code> / <code>category</code><br>
+                        • <code>комментарий</code> / <code>comment</code><br><br>
+                        <strong>Пример:</strong><br>
+                        <code>дата,сумма,категория,комментарий</code><br>
+                        <code>15.01.2024,50000,зарплата,За январь</code><br>
+                        <code>16.01.2024,-1500,еда,Продукты</code>
+                    </div>
+                </div>
+
+                <div id="importInfoPDF" class="import-info" style="display:none;">
+                    <div class="import-info-title">⚠️ Импорт из PDF</div>
+                    <div class="import-info-text">
+                        PDF-импорт работает <strong>экспериментально</strong>.<br><br>
+                        Мы попытаемся найти в тексте:<br>
+                        • Даты в формате ДД.ММ.ГГГГ<br>
+                        • Суммы с разделителем (напр. 1 500,00)<br><br>
+                        <strong>Рекомендация:</strong> Для надёжного импорта экспортируйте данные из банка в CSV или XLSX.
                     </div>
                 </div>
             </div>
@@ -1439,27 +1541,30 @@
                 <div class="import-stats">
                     <div class="import-stat">
                         <div class="import-stat-value" id="importCount">0</div>
-                        <div class="import-stat-label">Операций</div>
+                        <div class="import-stat-label">Найдено</div>
                     </div>
                     <div class="import-stat">
-                        <div class="import-stat-value" id="importIncome">0</div>
-                        <div class="import-stat-label">Доходов</div>
+                        <div class="import-stat-value" style="color: var(--green)" id="importIncomeSum">0</div>
+                        <div class="import-stat-label">Доходы</div>
                     </div>
                     <div class="import-stat">
-                        <div class="import-stat-value" id="importExpense">0</div>
-                        <div class="import-stat-label">Расходов</div>
+                        <div class="import-stat-value" style="color: var(--red)" id="importExpenseSum">0</div>
+                        <div class="import-stat-label">Расходы</div>
                     </div>
                 </div>
 
                 <div class="import-preview">
-                    <div class="import-preview-title">Предпросмотр (первые 10)</div>
+                    <div class="import-preview-title">
+                        <span>Предпросмотр</span>
+                        <span class="import-preview-edit" id="importClear">Очистить всё</span>
+                    </div>
                     <div id="importPreviewList"></div>
                 </div>
 
                 <button class="btn-import-confirm" id="btnImportConfirm">Импортировать</button>
             </div>
 
-            <input type="file" class="hidden-input" id="fileInput" accept=".csv,.pdf">
+            <input type="file" class="hidden-input" id="fileInput" accept=".csv,.xlsx,.xls,.pdf">
         </div>
     </div>
 
@@ -1532,64 +1637,60 @@
         };
 
         const CATEGORY_MAP = {
-            'зарплата': 'salary', 'salary': 'salary',
+            'зарплата': 'salary', 'salary': 'salary', 'wage': 'salary', 'wages': 'salary',
             'фриланс': 'freelance', 'freelance': 'freelance',
-            'инвестиции': 'invest', 'invest': 'invest',
+            'инвестиции': 'invest', 'invest': 'invest', 'investment': 'invest',
             'подарок': 'gift', 'gift': 'gift',
-            'кэшбэк': 'cashback', 'cashback': 'cashback',
+            'кэшбэк': 'cashback', 'cashback': 'cashback', 'кешбэк': 'cashback',
             'продажа': 'sale', 'sale': 'sale',
-            'аренда': 'rental', 'rental': 'rental',
+            'аренда': 'rental', 'rental': 'rental', 'rent': 'rental',
             'премия': 'bonus', 'bonus': 'bonus',
             'возврат': 'refund', 'refund': 'refund',
             'дивиденды': 'dividends', 'dividends': 'dividends',
             'стипендия': 'grant', 'grant': 'grant',
-            'продукты': 'food', 'еда': 'food', 'food': 'food',
-            'кафе': 'cafe', 'cafe': 'cafe', 'ресторан': 'cafe',
-            'транспорт': 'transport', 'transport': 'transport',
-            'жильё': 'home', 'home': 'home',
-            'жкх': 'utilities', 'utilities': 'utilities',
-            'здоровье': 'health', 'health': 'health',
+            'продукты': 'food', 'еда': 'food', 'food': 'food', 'grocery': 'food', 'groceries': 'food',
+            'кафе': 'cafe', 'cafe': 'cafe', 'ресторан': 'cafe', 'restaurant': 'cafe',
+            'транспорт': 'transport', 'transport': 'transport', 'taxi': 'transport', 'такси': 'transport',
+            'жильё': 'home', 'жилье': 'home', 'home': 'home', 'housing': 'home', 'квартира': 'home',
+            'жкх': 'utilities', 'utilities': 'utilities', 'коммуналка': 'utilities',
+            'здоровье': 'health', 'health': 'health', 'медицина': 'health', 'аптека': 'health',
             'красота': 'beauty', 'beauty': 'beauty',
-            'одежда': 'clothes', 'clothes': 'clothes',
-            'обучение': 'education', 'education': 'education',
-            'развлечения': 'fun', 'fun': 'fun',
+            'одежда': 'clothes', 'clothes': 'clothes', 'clothing': 'clothes',
+            'обучение': 'education', 'образование': 'education', 'education': 'education',
+            'развлечения': 'fun', 'fun': 'fun', 'entertainment': 'fun',
             'подписки': 'subscriptions', 'subscriptions': 'subscriptions',
-            'связь': 'telecom', 'telecom': 'telecom',
+            'связь': 'telecom', 'telecom': 'telecom', 'телефон': 'telecom', 'интернет': 'telecom',
             'путешествия': 'travel', 'travel': 'travel',
             'подарки': 'gifts', 'gifts': 'gifts',
-            'питомцы': 'pets', 'pets': 'pets',
-            'спорт': 'sport', 'sport': 'sport',
-            'дети': 'kids', 'kids': 'kids',
-            'авто': 'car', 'car': 'car',
+            'питомцы': 'pets', 'pets': 'pets', 'животные': 'pets',
+            'спорт': 'sport', 'sport': 'sport', 'fitness': 'sport', 'фитнес': 'sport',
+            'дети': 'kids', 'kids': 'kids', 'children': 'kids',
+            'авто': 'car', 'car': 'car', 'машина': 'car', 'бензин': 'car', 'топливо': 'car',
             'ремонт': 'repairs', 'repairs': 'repairs',
-            'другое': 'other_out', 'other': 'other_out'
+            'другое': 'other_out', 'other': 'other_out', 'прочее': 'other_out'
         };
 
         // ===== STATE =====
-        const STORAGE_KEY = 'finance_app_v2';
+        const STORAGE_KEY = 'finance_app_v3';
         let state = loadState();
         let currentType = 'income';
         let selectedCategory = null;
         let currentTxId = null;
         let importedTransactions = [];
-        let chartAngles = { incomeStart: 0, incomeEnd: 0, expenseStart: 0, expenseEnd: 0 };
+        let chartAngles = {};
 
         function loadState() {
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) return JSON.parse(saved);
-            } catch (e) {
-                console.error('Load error:', e);
-            }
+            } catch (e) {}
             return { transactions: [], currency: '' };
         }
 
         function saveState() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            } catch (e) {
-                console.error('Save error:', e);
-            }
+            } catch (e) {}
         }
 
         const $ = id => document.getElementById(id);
@@ -1601,7 +1702,6 @@
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
                 $(btn.dataset.page).classList.add('active');
-                
                 if (btn.dataset.page === 'pageHistory') renderHistory();
                 if (btn.dataset.page === 'pageSettings') renderSettings();
             });
@@ -1609,11 +1709,7 @@
 
         // ===== FORMATTING =====
         function formatMoney(amount, currency = '₽') {
-            const formatted = new Intl.NumberFormat('ru-RU', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2
-            }).format(Math.abs(amount));
-            return formatted + ' ' + currency;
+            return new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Math.abs(amount)) + ' ' + currency;
         }
 
         function formatDate(ts) {
@@ -1622,7 +1718,6 @@
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const txDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
             const diff = Math.floor((today - txDay) / 86400000);
-            
             const time = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
             if (diff === 0) return 'Сегодня, ' + time;
             if (diff === 1) return 'Вчера, ' + time;
@@ -1635,17 +1730,15 @@
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const txDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
             const diff = Math.floor((today - txDay) / 86400000);
-            
             if (diff === 0) return 'Сегодня';
             if (diff === 1) return 'Вчера';
             return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
         }
 
         function getCat(type, id) {
-            return CATEGORIES[type]?.find(c => c.id === id) || { icon: '❓', name: id };
+            return CATEGORIES[type]?.find(c => c.id === id) || { icon: '❓', name: id || 'Другое' };
         }
 
-        // ===== CALCULATIONS =====
         function calcTotals() {
             let income = 0, expense = 0;
             state.transactions.forEach(tx => {
@@ -1659,38 +1752,27 @@
             const breakdown = {};
             state.transactions.forEach(tx => {
                 if (tx.type !== type) return;
-                if (!breakdown[tx.category]) {
-                    breakdown[tx.category] = { amount: 0, count: 0 };
-                }
+                if (!breakdown[tx.category]) breakdown[tx.category] = { amount: 0, count: 0 };
                 breakdown[tx.category].amount += tx.amount;
                 breakdown[tx.category].count++;
             });
-            
-            const total = Object.values(breakdown).reduce((sum, v) => sum + v.amount, 0);
-            
+            const total = Object.values(breakdown).reduce((s, v) => s + v.amount, 0);
             return Object.entries(breakdown)
-                .map(([catId, data]) => ({
-                    catId,
-                    ...data,
-                    percent: total > 0 ? (data.amount / total * 100) : 0
-                }))
+                .map(([catId, data]) => ({ catId, ...data, percent: total > 0 ? (data.amount / total * 100) : 0 }))
                 .sort((a, b) => b.amount - a.amount);
         }
 
         // ===== RENDER MAIN =====
         function renderMain() {
             const { income, expense, balance } = calcTotals();
-            
             const balanceEl = $('mainBalance');
             balanceEl.textContent = (balance >= 0 ? '' : '−') + formatMoney(balance);
             balanceEl.className = 'balance-value ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'zero');
-
             $('summaryIncome').textContent = formatMoney(income);
             $('summaryExpense').textContent = formatMoney(expense);
 
             const total = income + expense;
             const hasData = total > 0;
-            
             $('chartContainer').style.display = hasData ? 'flex' : 'none';
             $('chartLegend').style.display = hasData ? 'flex' : 'none';
             $('chartHint').style.display = hasData ? 'block' : 'none';
@@ -1702,17 +1784,14 @@
                 $('legendIncome').textContent = Math.round(income / total * 100) + '%';
                 $('legendExpense').textContent = Math.round(expense / total * 100) + '%';
             }
-
             updateConversion();
         }
 
-        // ===== PIE CHART =====
         function drawPieChart(income, expense) {
             const canvas = $('pieChart');
             const ctx = canvas.getContext('2d');
             const size = 160;
             const dpr = window.devicePixelRatio || 1;
-            
             canvas.width = size * dpr;
             canvas.height = size * dpr;
             canvas.style.width = size + 'px';
@@ -1720,16 +1799,12 @@
             ctx.scale(dpr, dpr);
 
             const total = income + expense;
-            const cx = size / 2;
-            const cy = size / 2;
+            const cx = size / 2, cy = size / 2;
             const radius = size / 2 - 4;
             const innerRadius = radius * 0.65;
-
             ctx.clearRect(0, 0, size, size);
 
             let start = -Math.PI / 2;
-
-            // Store angles for click detection
             chartAngles.incomeStart = start;
 
             if (income > 0) {
@@ -1737,12 +1812,10 @@
                 ctx.beginPath();
                 ctx.moveTo(cx, cy);
                 ctx.arc(cx, cy, radius, start, start + angle);
-                ctx.lineTo(cx, cy);
                 ctx.fillStyle = '#8fbc8f';
                 ctx.fill();
                 start += angle;
             }
-
             chartAngles.incomeEnd = start;
             chartAngles.expenseStart = start;
 
@@ -1751,13 +1824,10 @@
                 ctx.beginPath();
                 ctx.moveTo(cx, cy);
                 ctx.arc(cx, cy, radius, start, start + angle);
-                ctx.lineTo(cx, cy);
                 ctx.fillStyle = '#cd8b8b';
                 ctx.fill();
-                start += angle;
             }
-
-            chartAngles.expenseEnd = start;
+            chartAngles.expenseEnd = start + (expense / total) * Math.PI * 2;
 
             ctx.beginPath();
             ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
@@ -1765,56 +1835,32 @@
             ctx.fill();
         }
 
-        // ===== CHART CLICK HANDLER =====
         $('chartWrapper').addEventListener('click', (e) => {
             const { income, expense } = calcTotals();
             if (income === 0 && expense === 0) return;
-
             const rect = e.currentTarget.getBoundingClientRect();
             const x = e.clientX - rect.left - rect.width / 2;
             const y = e.clientY - rect.top - rect.height / 2;
-            
-            // Check if click is in donut area (not center)
             const distance = Math.sqrt(x * x + y * y);
             const outerRadius = rect.width / 2 - 4;
             const innerRadius = outerRadius * 0.65;
-            
             if (distance < innerRadius || distance > outerRadius) return;
-            
-            // Calculate angle
             let angle = Math.atan2(y, x);
-            
-            // Normalize angle to match chart drawing (starts at -PI/2)
-            if (angle < -Math.PI / 2) {
-                angle += Math.PI * 2;
-            }
-            
-            // Determine which section was clicked
+            if (angle < -Math.PI / 2) angle += Math.PI * 2;
             if (income > 0 && angle >= chartAngles.incomeStart && angle < chartAngles.incomeEnd) {
                 openBreakdownModal('income');
             } else if (expense > 0) {
                 openBreakdownModal('expense');
             }
-            
             haptic('light');
         });
 
-        // Legend click handlers
-        $('legendIncomeBtn').addEventListener('click', () => {
-            const { income } = calcTotals();
-            if (income > 0) openBreakdownModal('income');
-        });
+        $('legendIncomeBtn').addEventListener('click', () => { if (calcTotals().income > 0) openBreakdownModal('income'); });
+        $('legendExpenseBtn').addEventListener('click', () => { if (calcTotals().expense > 0) openBreakdownModal('expense'); });
 
-        $('legendExpenseBtn').addEventListener('click', () => {
-            const { expense } = calcTotals();
-            if (expense > 0) openBreakdownModal('expense');
-        });
-
-        // ===== BREAKDOWN MODAL =====
         function openBreakdownModal(type) {
             const breakdown = calcCategoryBreakdown(type);
-            const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
-            
+            const total = breakdown.reduce((s, i) => s + i.amount, 0);
             const isIncome = type === 'income';
             $('breakdownIcon').textContent = isIncome ? '📈' : '📉';
             $('breakdownIcon').className = 'breakdown-icon ' + type;
@@ -1822,7 +1868,7 @@
             $('breakdownTitle').className = 'modal-title ' + type;
             $('breakdownTotalValue').textContent = formatMoney(total);
             $('breakdownTotalValue').className = 'breakdown-total-value ' + type;
-            $('breakdownTotalLabel').textContent = `${breakdown.reduce((sum, i) => sum + i.count, 0)} операций`;
+            $('breakdownTotalLabel').textContent = `${breakdown.reduce((s, i) => s + i.count, 0)} операций`;
 
             if (breakdown.length === 0) {
                 $('breakdownList').style.display = 'none';
@@ -1830,7 +1876,6 @@
             } else {
                 $('breakdownEmpty').style.display = 'none';
                 $('breakdownList').style.display = 'flex';
-                
                 $('breakdownList').innerHTML = breakdown.map(item => {
                     const cat = getCat(type, item.catId);
                     return `
@@ -1839,9 +1884,7 @@
                             <div class="breakdown-item-info">
                                 <div class="breakdown-item-name">${cat.name}</div>
                                 <div class="breakdown-item-count">${item.count} ${pluralize(item.count, 'операция', 'операции', 'операций')}</div>
-                                <div class="breakdown-bar">
-                                    <div class="breakdown-bar-fill ${type}" style="width: ${item.percent}%"></div>
-                                </div>
+                                <div class="breakdown-bar"><div class="breakdown-bar-fill ${type}" style="width: ${item.percent}%"></div></div>
                             </div>
                             <div class="breakdown-item-right">
                                 <div class="breakdown-item-amount ${type}">${formatMoney(item.amount)}</div>
@@ -1851,50 +1894,34 @@
                     `;
                 }).join('');
             }
-
             $('breakdownModal').classList.add('active');
             haptic('light');
         }
 
         function pluralize(n, one, few, many) {
-            const mod10 = n % 10;
-            const mod100 = n % 100;
-            if (mod10 === 1 && mod100 !== 11) return one;
-            if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+            const m10 = n % 10, m100 = n % 100;
+            if (m10 === 1 && m100 !== 11) return one;
+            if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
             return many;
         }
 
-        $('breakdownModal').addEventListener('click', (e) => {
-            if (e.target === $('breakdownModal')) {
-                $('breakdownModal').classList.remove('active');
-            }
-        });
-
+        $('breakdownModal').addEventListener('click', (e) => { if (e.target === $('breakdownModal')) $('breakdownModal').classList.remove('active'); });
         setupSwipeClose('breakdownModal');
 
         // ===== RENDER HISTORY =====
         function renderHistory() {
             const sorted = [...state.transactions].sort((a, b) => b.timestamp - a.timestamp);
             const listEl = $('historyList');
-
             if (sorted.length === 0) {
-                listEl.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📋</div>
-                        <div class="empty-state-title">История пуста</div>
-                        <div class="empty-state-text">Здесь будут отображаться<br>все ваши операции</div>
-                    </div>
-                `;
+                listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">История пуста</div><div class="empty-state-text">Добавьте операции</div></div>';
                 return;
             }
-
             const groups = {};
             sorted.forEach(tx => {
                 const day = new Date(tx.timestamp).toDateString();
                 if (!groups[day]) groups[day] = [];
                 groups[day].push(tx);
             });
-
             let html = '';
             Object.keys(groups).forEach(day => {
                 const txs = groups[day];
@@ -1907,10 +1934,7 @@
                             <div class="tx-icon ${tx.type}">${cat.icon}</div>
                             <div class="tx-info">
                                 <div class="tx-category">${cat.name}</div>
-                                <div class="tx-meta">
-                                    ${formatDate(tx.timestamp).split(', ')[1] || formatDate(tx.timestamp)}
-                                    ${tx.comment ? '<span class="tx-has-comment"></span>' : ''}
-                                </div>
+                                <div class="tx-meta">${formatDate(tx.timestamp).split(', ')[1] || formatDate(tx.timestamp)}${tx.comment ? '<span class="tx-has-comment"></span>' : ''}</div>
                             </div>
                             <div class="tx-amount ${tx.type}">${sign}${formatMoney(tx.amount)}</div>
                         </div>
@@ -1918,94 +1942,56 @@
                 });
                 html += '</div></div>';
             });
-
             listEl.innerHTML = html;
-
             listEl.querySelectorAll('.tx-item').forEach(item => {
                 item.addEventListener('click', () => openDetailModal(item.dataset.id));
             });
         }
 
-        // ===== RENDER SETTINGS =====
         function renderSettings() {
             const incomeCount = state.transactions.filter(t => t.type === 'income').length;
             const expenseCount = state.transactions.filter(t => t.type === 'expense').length;
-
             $('statTotal').textContent = state.transactions.length;
             $('statIncome').textContent = incomeCount;
             $('statExpense').textContent = expenseCount;
-            
             $('currencySelect').value = state.currency || '';
             if (state.currency) updateConversion();
         }
 
-        // ===== CURRENCY CONVERSION =====
         async function updateConversion() {
             const currency = state.currency;
-            if (!currency) {
-                $('convertResult').style.display = 'none';
-                $('mainBalanceConverted').textContent = '';
-                return;
-            }
-
+            if (!currency) { $('convertResult').style.display = 'none'; $('mainBalanceConverted').textContent = ''; return; }
             const { balance } = calcTotals();
             $('convertResult').style.display = 'block';
             $('convertedValue').innerHTML = '<div class="loading"></div>';
-            $('convertRate').textContent = 'Загрузка курса...';
-
             try {
                 const res = await fetch(`https://api.exchangerate-api.com/v4/latest/RUB`);
                 const data = await res.json();
                 const rate = data.rates[currency];
-                
                 if (rate) {
                     const converted = balance * rate;
-                    const symbols = { 
-                        USD: '$', EUR: '€', GBP: '£', CNY: '¥', JPY: '¥', 
-                        TRY: '₺', KZT: '₸', BYN: 'Br', UAH: '₴', AED: 'د.إ',
-                        GEL: '₾', AMD: '֏'
-                    };
+                    const symbols = { USD: '$', EUR: '€', GBP: '£', CNY: '¥', TRY: '₺', KZT: '₸', BYN: 'Br', UAH: '₴', GEL: '₾', AMD: '֏' };
                     const sym = symbols[currency] || currency;
-                    
-                    const formattedConverted = formatMoney(converted, sym);
-                    $('convertedValue').textContent = formattedConverted;
-                    $('convertRate').textContent = `Курс: 1 RUB = ${rate.toFixed(6)} ${currency}`;
-                    $('mainBalanceConverted').textContent = `≈ ${formattedConverted}`;
-                } else {
-                    throw new Error('Rate not found');
+                    $('convertedValue').textContent = formatMoney(converted, sym);
+                    $('convertRate').textContent = `1 RUB = ${rate.toFixed(6)} ${currency}`;
+                    $('mainBalanceConverted').textContent = `≈ ${formatMoney(converted, sym)}`;
                 }
-            } catch (e) {
-                $('convertedValue').textContent = 'Ошибка загрузки';
-                $('convertRate').textContent = 'Попробуйте позже';
-                $('mainBalanceConverted').textContent = '';
-            }
+            } catch (e) { $('convertedValue').textContent = 'Ошибка'; $('convertRate').textContent = ''; }
         }
 
-        $('currencySelect').addEventListener('change', (e) => {
-            state.currency = e.target.value;
-            saveState();
-            updateConversion();
-        });
+        $('currencySelect').addEventListener('change', (e) => { state.currency = e.target.value; saveState(); updateConversion(); });
 
         // ===== ADD MODAL =====
         function openAddModal(type) {
             currentType = type;
             selectedCategory = null;
-
             $('modalTitle').textContent = type === 'income' ? 'Новый доход' : 'Новый расход';
             $('btnSubmit').className = 'btn-submit ' + type;
             $('btnSubmit').textContent = type === 'income' ? 'Добавить доход' : 'Добавить расход';
             $('inputAmount').value = '';
             $('inputComment').value = '';
-
             const grid = $('categoryGrid');
-            grid.innerHTML = CATEGORIES[type].map(c => `
-                <div class="category-item" data-id="${c.id}">
-                    <div class="category-icon">${c.icon}</div>
-                    <div class="category-name">${c.name}</div>
-                </div>
-            `).join('');
-
+            grid.innerHTML = CATEGORIES[type].map(c => `<div class="category-item" data-id="${c.id}"><div class="category-icon">${c.icon}</div><div class="category-name">${c.name}</div></div>`).join('');
             grid.querySelectorAll('.category-item').forEach(item => {
                 item.addEventListener('click', () => {
                     grid.querySelectorAll('.category-item').forEach(i => i.classList.remove('selected'));
@@ -2014,50 +2000,31 @@
                     haptic('light');
                 });
             });
-
             $('addModal').classList.add('active');
             setTimeout(() => $('inputAmount').focus(), 300);
             haptic('light');
         }
 
-        function closeAddModal() {
-            $('addModal').classList.remove('active');
-        }
-
         $('btnAddIncome').addEventListener('click', () => openAddModal('income'));
         $('btnAddExpense').addEventListener('click', () => openAddModal('expense'));
-
-        $('addModal').addEventListener('click', (e) => {
-            if (e.target === $('addModal')) closeAddModal();
-        });
-
+        $('addModal').addEventListener('click', (e) => { if (e.target === $('addModal')) $('addModal').classList.remove('active'); });
         setupSwipeClose('addModal');
 
         $('btnSubmit').addEventListener('click', () => {
             const amount = parseFloat($('inputAmount').value);
-            if (!amount || amount <= 0) {
-                haptic('error');
-                $('inputAmount').focus();
-                return;
-            }
-            if (!selectedCategory) {
-                haptic('error');
-                return;
-            }
-
-            const tx = {
+            if (!amount || amount <= 0) { haptic('error'); $('inputAmount').focus(); return; }
+            if (!selectedCategory) { haptic('error'); return; }
+            state.transactions.push({
                 id: Date.now().toString(36) + Math.random().toString(36).slice(2),
                 type: currentType,
                 amount: Math.round(amount * 100) / 100,
                 category: selectedCategory,
                 comment: $('inputComment').value.trim(),
                 timestamp: Date.now()
-            };
-
-            state.transactions.push(tx);
+            });
             saveState();
             renderMain();
-            closeAddModal();
+            $('addModal').classList.remove('active');
             haptic('success');
         });
 
@@ -2065,11 +2032,9 @@
         function openDetailModal(id) {
             const tx = state.transactions.find(t => t.id === id);
             if (!tx) return;
-
             currentTxId = id;
             const cat = getCat(tx.type, tx.category);
             const sign = tx.type === 'income' ? '+' : '−';
-
             $('detailIcon').textContent = cat.icon;
             $('detailIcon').className = 'detail-icon ' + tx.type;
             $('detailAmount').textContent = sign + formatMoney(tx.amount);
@@ -2077,34 +2042,19 @@
             $('detailCategory').textContent = cat.name;
             $('detailDate').textContent = formatDate(tx.timestamp);
             $('detailType').textContent = tx.type === 'income' ? 'Доход' : 'Расход';
-
-            if (tx.comment) {
-                $('detailCommentRow').style.display = 'flex';
-                $('detailComment').textContent = tx.comment;
-            } else {
-                $('detailCommentRow').style.display = 'none';
-            }
-
+            if (tx.comment) { $('detailCommentRow').style.display = 'flex'; $('detailComment').textContent = tx.comment; }
+            else { $('detailCommentRow').style.display = 'none'; }
             $('detailModal').classList.add('active');
             haptic('light');
         }
 
-        function closeDetailModal() {
-            $('detailModal').classList.remove('active');
-            currentTxId = null;
-        }
-
-        $('detailModal').addEventListener('click', (e) => {
-            if (e.target === $('detailModal')) closeDetailModal();
-        });
-
+        $('detailModal').addEventListener('click', (e) => { if (e.target === $('detailModal')) { $('detailModal').classList.remove('active'); currentTxId = null; } });
         setupSwipeClose('detailModal');
 
         $('btnDeleteTx').addEventListener('click', () => {
             if (!currentTxId) return;
             const tx = state.transactions.find(t => t.id === currentTxId);
             if (!tx) return;
-
             const cat = getCat(tx.type, tx.category);
             $('confirmTitle').textContent = 'Удалить операцию?';
             $('confirmText').textContent = `${cat.icon} ${cat.name}: ${tx.type === 'income' ? '+' : '−'}${formatMoney(tx.amount)}`;
@@ -2112,7 +2062,19 @@
             haptic('medium');
         });
 
-        // ===== IMPORT MODAL =====
+        // ===== IMPORT =====
+        let currentImportTab = 'csv';
+
+        document.querySelectorAll('.import-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.import-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentImportTab = tab.dataset.tab;
+                $('importInfoCSV').style.display = currentImportTab === 'csv' ? 'block' : 'none';
+                $('importInfoPDF').style.display = currentImportTab === 'pdf' ? 'block' : 'none';
+            });
+        });
+
         function openImportModal() {
             importedTransactions = [];
             $('importUpload').style.display = 'block';
@@ -2124,43 +2086,17 @@
             haptic('light');
         }
 
-        function closeImportModal() {
-            $('importModal').classList.remove('active');
-        }
-
         $('btnImport').addEventListener('click', openImportModal);
-
-        $('importModal').addEventListener('click', (e) => {
-            if (e.target === $('importModal')) closeImportModal();
-        });
-
+        $('importModal').addEventListener('click', (e) => { if (e.target === $('importModal')) $('importModal').classList.remove('active'); });
         setupSwipeClose('importModal');
 
         const importZone = $('importZone');
         const fileInput = $('fileInput');
-
         importZone.addEventListener('click', () => fileInput.click());
-
-        importZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            importZone.classList.add('dragover');
-        });
-
-        importZone.addEventListener('dragleave', () => {
-            importZone.classList.remove('dragover');
-        });
-
-        importZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            importZone.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file) processFile(file);
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) processFile(file);
-        });
+        importZone.addEventListener('dragover', (e) => { e.preventDefault(); importZone.classList.add('dragover'); });
+        importZone.addEventListener('dragleave', () => importZone.classList.remove('dragover'));
+        importZone.addEventListener('drop', (e) => { e.preventDefault(); importZone.classList.remove('dragover'); if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); });
+        fileInput.addEventListener('change', (e) => { if (e.target.files[0]) processFile(e.target.files[0]); });
 
         async function processFile(file) {
             $('importUpload').style.display = 'none';
@@ -2170,48 +2106,118 @@
 
             try {
                 let transactions = [];
+                const ext = file.name.split('.').pop().toLowerCase();
 
-                if (file.name.endsWith('.csv')) {
+                if (ext === 'csv') {
                     transactions = await parseCSV(file);
-                } else if (file.name.endsWith('.pdf')) {
+                } else if (ext === 'xlsx' || ext === 'xls') {
+                    transactions = await parseXLSX(file);
+                } else if (ext === 'pdf') {
                     transactions = await parsePDF(file);
                 } else {
-                    throw new Error('Неподдерживаемый формат файла');
+                    throw new Error('Неподдерживаемый формат. Используйте CSV, XLSX или PDF');
                 }
 
                 if (transactions.length === 0) {
-                    throw new Error('Не найдено операций для импорта');
+                    throw new Error('Не найдено операций. Проверьте формат файла.');
                 }
 
                 importedTransactions = transactions;
-                showImportPreview(transactions);
-
+                showImportPreview();
             } catch (error) {
                 $('importLoading').style.display = 'none';
                 $('importError').style.display = 'block';
-                $('importError').textContent = error.message || 'Ошибка при обработке файла';
+                $('importError').textContent = error.message;
                 $('importUpload').style.display = 'block';
                 haptic('error');
             }
         }
 
+        // ===== PARSE CSV =====
         async function parseCSV(file) {
             const text = await file.text();
-            const lines = text.split('\n').filter(line => line.trim());
-            
-            if (lines.length < 2) throw new Error('Файл пуст');
+            return parseTableData(text);
+        }
+
+        // ===== PARSE XLSX =====
+        async function parseXLSX(file) {
+            if (!window.XLSX) throw new Error('Библиотека Excel не загружена');
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const csv = XLSX.utils.sheet_to_csv(sheet, { FS: ',', dateNF: 'YYYY-MM-DD' });
+            return parseTableData(csv);
+        }
+
+        function parseTableData(text) {
+            const lines = text.split('\n').filter(l => l.trim());
+            if (lines.length < 2) throw new Error('Файл пуст или содержит только заголовок');
+
+            const delimiter = lines[0].includes(';') ? ';' : ',';
+            const headerLine = lines[0].toLowerCase();
+            const headers = parseCSVLine(headerLine, delimiter);
+
+            // Find column indices
+            const dateIdx = headers.findIndex(h => /дата|date/.test(h));
+            const amountIdx = headers.findIndex(h => /сумма|amount|sum/.test(h));
+            const typeIdx = headers.findIndex(h => /тип|type/.test(h));
+            const categoryIdx = headers.findIndex(h => /категория|category/.test(h));
+            const commentIdx = headers.findIndex(h => /комментарий|comment|описание|description/.test(h));
+
+            if (amountIdx === -1) throw new Error('Не найдена колонка "сумма" или "amount"');
 
             const transactions = [];
-            const delimiter = lines[0].includes(';') ? ';' : ',';
 
             for (let i = 1; i < lines.length; i++) {
                 const parts = parseCSVLine(lines[i], delimiter);
-                if (parts.length < 4) continue;
+                if (parts.length < 2) continue;
 
                 try {
-                    const tx = parseCSVRow(parts);
-                    if (tx) transactions.push(tx);
-                } catch (e) {}
+                    // Parse amount
+                    let amountStr = parts[amountIdx] || '';
+                    amountStr = amountStr.replace(/[^\d.,-]/g, '').replace(',', '.');
+                    // Handle space as thousand separator
+                    amountStr = amountStr.replace(/\s/g, '');
+                    let amount = parseFloat(amountStr);
+                    if (isNaN(amount) || amount === 0) continue;
+
+                    // Determine type
+                    let type = 'expense';
+                    if (typeIdx !== -1) {
+                        const typeVal = (parts[typeIdx] || '').toLowerCase();
+                        if (/income|доход|приход|\+/.test(typeVal)) type = 'income';
+                    } else {
+                        type = amount > 0 ? 'income' : 'expense';
+                    }
+                    amount = Math.abs(amount);
+
+                    // Parse category
+                    let category = type === 'income' ? 'other_in' : 'other_out';
+                    if (categoryIdx !== -1 && parts[categoryIdx]) {
+                        const catLower = parts[categoryIdx].toLowerCase().trim();
+                        if (CATEGORY_MAP[catLower]) category = CATEGORY_MAP[catLower];
+                    }
+
+                    // Parse date
+                    let timestamp = Date.now();
+                    if (dateIdx !== -1 && parts[dateIdx]) {
+                        timestamp = parseDate(parts[dateIdx]);
+                    }
+
+                    // Parse comment
+                    let comment = '';
+                    if (commentIdx !== -1 && parts[commentIdx]) {
+                        comment = parts[commentIdx].trim().replace(/^["']|["']$/g, '');
+                    }
+
+                    transactions.push({
+                        id: Date.now().toString(36) + Math.random().toString(36).slice(2) + i,
+                        type, category,
+                        amount: Math.round(amount * 100) / 100,
+                        comment,
+                        timestamp
+                    });
+                } catch (e) { continue; }
             }
 
             return transactions;
@@ -2221,70 +2227,48 @@
             const result = [];
             let current = '';
             let inQuotes = false;
-
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
                 if (char === '"') inQuotes = !inQuotes;
-                else if (char === delimiter && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else current += char;
+                else if (char === delimiter && !inQuotes) { result.push(current.trim()); current = ''; }
+                else current += char;
             }
             result.push(current.trim());
             return result;
         }
 
-        function parseCSVRow(parts) {
-            let date, type, category, amount, comment;
+        function parseDate(str) {
+            str = str.trim().replace(/^["']|["']$/g, '');
+            
+            // Try ISO format first
+            let d = new Date(str);
+            if (!isNaN(d.getTime()) && d.getFullYear() > 2000) return d.getTime();
 
-            if (parts.length >= 5) {
-                [date, type, category, amount, comment] = parts;
-            } else {
-                [date, category, amount, comment] = parts;
-                type = null;
+            // Try DD.MM.YYYY or DD/MM/YYYY
+            const match = str.match(/(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})/);
+            if (match) {
+                let [, day, month, year] = match;
+                if (year.length === 2) year = '20' + year;
+                d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                if (!isNaN(d.getTime())) return d.getTime();
             }
 
-            amount = parseFloat(amount.replace(/[^\d.-]/g, '').replace(',', '.'));
-            if (isNaN(amount) || amount === 0) return null;
-
-            if (!type || (type !== 'income' && type !== 'expense')) {
-                type = amount > 0 ? 'income' : 'expense';
-            }
-            amount = Math.abs(amount);
-
-            const catLower = category.toLowerCase().trim();
-            const mappedCat = CATEGORY_MAP[catLower] || (type === 'income' ? 'other_in' : 'other_out');
-
-            let timestamp;
-            try {
-                timestamp = new Date(date).getTime();
-                if (isNaN(timestamp)) {
-                    const p = date.split(/[./-]/);
-                    if (p.length === 3) timestamp = new Date(p[2], p[1] - 1, p[0]).getTime();
-                }
-                if (isNaN(timestamp)) timestamp = Date.now();
-            } catch { timestamp = Date.now(); }
-
-            return {
-                id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-                type, category: mappedCat,
-                amount: Math.round(amount * 100) / 100,
-                comment: comment?.trim() || '',
-                timestamp
-            };
+            return Date.now();
         }
 
+        // ===== PARSE PDF =====
         async function parsePDF(file) {
             if (!window.pdfjsLib) throw new Error('PDF библиотека не загружена');
 
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            
+
             let fullText = '';
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                fullText += textContent.items.map(item => item.str).join(' ') + '\n';
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n';
             }
 
             return parsePDFText(fullText);
@@ -2293,132 +2277,183 @@
         function parsePDFText(text) {
             const transactions = [];
             const lines = text.split('\n');
-            
+
+            // Regex patterns for amounts (Russian format)
+            const amountPatterns = [
+                /([+-]?\s*\d{1,3}(?:[\s,]\d{3})*[.,]\d{2})\s*(?:₽|руб|RUB|р\.?)?/gi,
+                /([+-]?\s*\d+[.,]\d{2})\s*(?:₽|руб|RUB|р\.?)?/gi
+            ];
+
+            // Date patterns
+            const datePattern = /(\d{2})[./-](\d{2})[./-](\d{2,4})/;
+
             for (const line of lines) {
-                const amountMatch = line.match(/([+-]?\s*[\d\s]+[.,]\d{2})\s*(?:₽|руб|RUB)?/);
-                
-                if (amountMatch) {
-                    let amount = parseFloat(amountMatch[1].replace(/\s/g, '').replace(',', '.'));
-                    if (isNaN(amount) || amount === 0) continue;
+                if (line.trim().length < 5) continue;
 
-                    const type = amount < 0 ? 'expense' : 'income';
-                    amount = Math.abs(amount);
+                // Try to find date
+                const dateMatch = line.match(datePattern);
+                let timestamp = Date.now();
+                if (dateMatch) {
+                    let [, day, month, year] = dateMatch;
+                    if (year.length === 2) year = '20' + year;
+                    const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                    if (!isNaN(d.getTime()) && d.getFullYear() >= 2020) {
+                        timestamp = d.getTime();
+                    }
+                }
 
-                    let category = type === 'income' ? 'other_in' : 'other_out';
-                    const lineLower = line.toLowerCase();
+                // Try to find amount
+                for (const pattern of amountPatterns) {
+                    pattern.lastIndex = 0;
+                    const matches = line.matchAll(pattern);
                     
-                    for (const [keyword, catId] of Object.entries(CATEGORY_MAP)) {
-                        if (lineLower.includes(keyword)) { category = catId; break; }
-                    }
+                    for (const match of matches) {
+                        let amountStr = match[1].replace(/\s/g, '').replace(',', '.');
+                        let amount = parseFloat(amountStr);
+                        
+                        // Skip unrealistic amounts
+                        if (isNaN(amount) || Math.abs(amount) < 10 || Math.abs(amount) > 10000000) continue;
 
-                    let timestamp = Date.now();
-                    const dateMatch = line.match(/(\d{2}[./-]\d{2}[./-]\d{4})/);
-                    if (dateMatch) {
-                        const parts = dateMatch[1].split(/[./-]/);
-                        if (parts.length === 3) {
-                            const parsed = new Date(parts[2], parts[1] - 1, parts[0]).getTime();
-                            if (!isNaN(parsed)) timestamp = parsed;
+                        const type = amount < 0 ? 'expense' : 'income';
+                        amount = Math.abs(amount);
+
+                        // Try to detect category from context
+                        let category = type === 'income' ? 'other_in' : 'other_out';
+                        const lineLower = line.toLowerCase();
+                        for (const [keyword, catId] of Object.entries(CATEGORY_MAP)) {
+                            if (lineLower.includes(keyword) && keyword.length > 3) {
+                                category = catId;
+                                break;
+                            }
                         }
-                    }
 
-                    transactions.push({
-                        id: Date.now().toString(36) + Math.random().toString(36).slice(2) + transactions.length,
-                        type, category,
-                        amount: Math.round(amount * 100) / 100,
-                        comment: '', timestamp
-                    });
+                        transactions.push({
+                            id: Date.now().toString(36) + Math.random().toString(36).slice(2) + transactions.length,
+                            type, category,
+                            amount: Math.round(amount * 100) / 100,
+                            comment: '',
+                            timestamp
+                        });
+                        break; // One amount per line
+                    }
                 }
             }
 
-            return transactions;
+            // Remove duplicates (same amount + timestamp)
+            const unique = [];
+            const seen = new Set();
+            for (const tx of transactions) {
+                const key = `${tx.amount}-${tx.timestamp}-${tx.type}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    unique.push(tx);
+                }
+            }
+
+            return unique;
         }
 
-        function showImportPreview(transactions) {
+        // ===== IMPORT PREVIEW =====
+        function showImportPreview() {
             $('importLoading').style.display = 'none';
             $('importPreview').style.display = 'block';
+            updateImportStats();
+            renderImportList();
+            haptic('success');
+        }
 
-            const incomeCount = transactions.filter(t => t.type === 'income').length;
-            const expenseCount = transactions.filter(t => t.type === 'expense').length;
+        function updateImportStats() {
+            const incomeSum = importedTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const expenseSum = importedTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+            $('importCount').textContent = importedTransactions.length;
+            $('importIncomeSum').textContent = formatMoney(incomeSum);
+            $('importExpenseSum').textContent = formatMoney(expenseSum);
+        }
 
-            $('importCount').textContent = transactions.length;
-            $('importIncome').textContent = incomeCount;
-            $('importExpense').textContent = expenseCount;
-
-            $('importPreviewList').innerHTML = transactions.slice(0, 10).map(tx => {
+        function renderImportList() {
+            const list = $('importPreviewList');
+            list.innerHTML = importedTransactions.slice(0, 20).map((tx, idx) => {
                 const cat = getCat(tx.type, tx.category);
                 const sign = tx.type === 'income' ? '+' : '−';
+                const date = new Date(tx.timestamp).toLocaleDateString('ru-RU');
                 return `
-                    <div class="import-preview-item">
-                        <span class="import-preview-cat">${cat.icon} ${cat.name}</span>
+                    <div class="import-preview-item" data-idx="${idx}">
+                        <div class="import-preview-left">
+                            <span>${cat.icon}</span>
+                            <div>
+                                <div class="import-preview-cat">${cat.name}</div>
+                                <div class="import-preview-date">${date}</div>
+                            </div>
+                        </div>
                         <span class="import-preview-amount ${tx.type}">${sign}${formatMoney(tx.amount)}</span>
+                        <button class="import-preview-remove" data-idx="${idx}">×</button>
                     </div>
                 `;
             }).join('');
 
-            haptic('success');
+            if (importedTransactions.length > 20) {
+                list.innerHTML += `<div style="text-align: center; padding: 10px; color: var(--text-muted); font-size: 12px;">... и ещё ${importedTransactions.length - 20} операций</div>`;
+            }
+
+            list.querySelectorAll('.import-preview-remove').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(btn.dataset.idx);
+                    importedTransactions.splice(idx, 1);
+                    updateImportStats();
+                    renderImportList();
+                    haptic('light');
+                });
+            });
         }
+
+        $('importClear').addEventListener('click', () => {
+            importedTransactions = [];
+            $('importPreview').style.display = 'none';
+            $('importUpload').style.display = 'block';
+            haptic('light');
+        });
 
         $('btnImportConfirm').addEventListener('click', () => {
             if (importedTransactions.length === 0) return;
-
             state.transactions.push(...importedTransactions);
             saveState();
             renderMain();
             renderHistory();
             renderSettings();
-            closeImportModal();
+            $('importModal').classList.remove('active');
             haptic('success');
         });
 
         $('btnExport').addEventListener('click', () => {
-            if (state.transactions.length === 0) {
-                alert('Нет данных для экспорта');
-                return;
-            }
-
+            if (state.transactions.length === 0) { alert('Нет данных'); return; }
             const headers = ['Дата', 'Тип', 'Категория', 'Сумма', 'Комментарий'];
             const rows = state.transactions.map(tx => {
                 const cat = getCat(tx.type, tx.category);
-                const date = new Date(tx.timestamp).toLocaleDateString('ru-RU');
-                return [date, tx.type, cat.name, tx.amount, tx.comment || ''].map(v => `"${v}"`).join(',');
+                return [new Date(tx.timestamp).toLocaleDateString('ru-RU'), tx.type, cat.name, tx.amount, tx.comment].map(v => `"${v}"`).join(',');
             });
-
             const csv = [headers.join(','), ...rows].join('\n');
             const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `finance_export_${new Date().toISOString().slice(0,10)}.csv`;
+            a.href = URL.createObjectURL(blob);
+            a.download = `finance_${new Date().toISOString().slice(0,10)}.csv`;
             a.click();
-            
-            URL.revokeObjectURL(url);
             haptic('success');
         });
 
-        // ===== CONFIRM MODAL =====
-        $('btnCancelConfirm').addEventListener('click', () => {
-            $('confirmModal').classList.remove('active');
-        });
-
-        $('confirmModal').addEventListener('click', (e) => {
-            if (e.target === $('confirmModal')) $('confirmModal').classList.remove('active');
-        });
+        // ===== CONFIRM =====
+        $('btnCancelConfirm').addEventListener('click', () => $('confirmModal').classList.remove('active'));
+        $('confirmModal').addEventListener('click', (e) => { if (e.target === $('confirmModal')) $('confirmModal').classList.remove('active'); });
 
         $('btnConfirmOk').addEventListener('click', () => {
             if (currentTxId) {
                 state.transactions = state.transactions.filter(t => t.id !== currentTxId);
-                saveState();
-                renderMain();
-                renderHistory();
-                closeDetailModal();
+                saveState(); renderMain(); renderHistory();
+                $('detailModal').classList.remove('active');
+                currentTxId = null;
             } else {
-                state.transactions = [];
-                state.currency = '';
-                saveState();
-                renderMain();
-                renderHistory();
-                renderSettings();
+                state.transactions = []; state.currency = '';
+                saveState(); renderMain(); renderHistory(); renderSettings();
             }
             $('confirmModal').classList.remove('active');
             haptic('success');
@@ -2427,7 +2462,7 @@
         $('btnClearAll').addEventListener('click', () => {
             currentTxId = null;
             $('confirmTitle').textContent = 'Удалить все данные?';
-            $('confirmText').textContent = 'Все операции будут безвозвратно удалены';
+            $('confirmText').textContent = 'Все операции будут удалены';
             $('confirmModal').classList.add('active');
             haptic('medium');
         });
@@ -2436,11 +2471,8 @@
             const overlay = $(modalId);
             const modal = overlay.querySelector('.modal');
             let startY = 0;
-
             modal.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
-            modal.addEventListener('touchmove', e => {
-                if (e.touches[0].clientY - startY > 80) overlay.classList.remove('active');
-            }, { passive: true });
+            modal.addEventListener('touchmove', e => { if (e.touches[0].clientY - startY > 80) overlay.classList.remove('active'); }, { passive: true });
         }
 
         function haptic(type) {
